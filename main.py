@@ -22,11 +22,40 @@ VKUSVIL_PRODUCT_LIST_URLS = [
 VKUSVIL_PRODUCT_LIST_PRICES = []
 VKUSVIL_PRICE_REGEX = r'\d+(?=&)'
 VKUSVIL_PRICE_ELEMENT = 'Price Price--lg'
+PEREKRESTOK_PRICE_ELEMENT = 'price-card-unit-value'
+PEREKRESTOK_PRICE_REGEX = r'\d+,\d{2}'
+PEREKRESTOK_PRODUCT_LIST_URLS = [
+    "https://www.perekrestok.ru/cat/107/p/ris-mistral-zasmin-belyj-aromatnyj-dlinnozernyj-500g-39747",
+    "https://www.perekrestok.ru/cat/107/p/ris-mistral-kuban-belyj-kruglozernyj-900g-3766",
+    "https://www.perekrestok.ru/cat/107/p/grecka-mistral-900g-53673"
+]
+PEREKRESTOK_PRODUCT_LIST_PRICES = []
 
 def get_driver():
     options = uc.ChromeOptions()
     driver = uc.Chrome(options=options)
     return driver
+
+def get_perekrestok_price(url, driver):
+    price = None
+    try:
+        driver.get(url)
+        time.sleep(1)
+        price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{PEREKRESTOK_PRICE_ELEMENT}')]")
+        price_text = price_element.text
+        print(price_text)
+        price_match = re.search(PEREKRESTOK_PRICE_REGEX, price_text)
+        if price_match:
+            price = float(price_match.group().replace(',', '.'))
+            print(price)
+        else:
+            price = "wrong pattern`"
+            print("Perekrestok price pattern not found")
+    except Exception as e:
+        print(f"Error: {e}")
+        price = "error"
+    finally:
+        return price
 
 def get_lenta_price(url, driver):
     price = None
@@ -86,6 +115,11 @@ if __name__ == "__main__":
         price = get_vkusvil_price(url, driver)
         VKUSVIL_PRODUCT_LIST_PRICES.append(price)
         time.sleep(3)
+    for url in PEREKRESTOK_PRODUCT_LIST_URLS:
+        price = get_perekrestok_price(url, driver)
+        PEREKRESTOK_PRODUCT_LIST_PRICES.append(price)
+        time.sleep(3)
     driver.quit()
     print(LENTA_PRODUCT_LIST_PRICES)
     print(VKUSVIL_PRODUCT_LIST_PRICES)
+    print(PEREKRESTOK_PRODUCT_LIST_PRICES)
