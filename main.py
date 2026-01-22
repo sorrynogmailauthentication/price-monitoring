@@ -1,66 +1,48 @@
+import csv
 import undetected_chromedriver as uc
 import time
 import re
 from selenium.webdriver.common.by import By
+from product_list import *
+import pandas as pd
+from datetime import datetime
+import os
 
 LENTA_PRICE_REGEX = r'\d+,\d{2}'
 LENTA_PRICE_ELEMENT = 'main-price title-28-20'
-LENTA_PRODUCT_LIST_URLS = [
-    "https://lenta.com/product/krupa-grechnevaya-yadrica-vs-rossiya-900g-014384/",
-    "https://lenta.com/product/muka-vs-rossiya-2kg-073015/",
-    "https://lenta.com/product/drozhzhi-moment-hlebopekarnye-suhie-bystrodejjstv-rossiya-11g-23638/"
-    ]
-LENTA_PRODUCT_LIST_PRICES = []
-VKUSVIL_PRODUCT_LIST_URLS = [
-    "https://vkusvill.ru/goods/ris-mistral-zhasmin-500-g-32687.html",
-    "https://vkusvill.ru/goods/krupa-mannaya-makfa-iz-tverdykh-sortov-700-g-40587.html",
-    "https://vkusvill.ru/goods/krupa-grechnevaya-makfa-yadritsa-v-paketikakh-400-g-40585.html"
-
-]
-VKUSVIL_PRODUCT_LIST_PRICES = []
 VKUSVIL_PRICE_REGEX = r'\d+(?=&)'
 VKUSVIL_PRICE_ELEMENT = 'Price Price--lg'
 PEREKRESTOK_PRICE_ELEMENT = 'price-card-unit-value'
 PEREKRESTOK_PRICE_REGEX = r'\d+,\d{2}'
-PEREKRESTOK_PRODUCT_LIST_URLS = [
-    "https://www.perekrestok.ru/cat/107/p/ris-mistral-zasmin-belyj-aromatnyj-dlinnozernyj-500g-39747",
-    "https://www.perekrestok.ru/cat/107/p/ris-mistral-kuban-belyj-kruglozernyj-900g-3766",
-    "https://www.perekrestok.ru/cat/107/p/grecka-mistral-900g-53673"
-]
-PEREKRESTOK_PRODUCT_LIST_PRICES = []
-DIXY_PRODUCT_LIST_URLS = [
-    "https://dixy.ru/product/ris-natsional-srednezernyy-dlya-plova-900g-2000274400/",
-    "https://dixy.ru/product/ris-zernyshko-k-zernyshku-proparennyy-5kh80g-400g-2000310624/",
-    "https://dixy.ru/product/ris-zernyshko-k-zernyshku-kruglozernyy-900g-2000180350/"
-]
-DIXY_PRODUCT_LIST_PRICES = []
 DIXY_PRICE_REGEX = r'\d+\.\d{2}'
 DIXY_PRICE_ELEMENT = 'card__price-num'
-PYATEROCHKA_PRODUCT_LIST_URLS = [
-    "https://5ka.ru/product/fasol-konservirovannaya-bondyuel-belaya-v-tomatnom--39419/",
-    "https://5ka.ru/product/tomaty-cherri-global-village-selection-chernye-250--4374015/",
-    "https://5ka.ru/product/batonchik-snickers-super-shokoladnyy-s-karamelyu-a--4133363/"
-]
-PYATEROCHKA_PRODUCT_LIST_PRICES = []
 PYATEROCHKA_PRICE_REGEX = r'\d+\.\d{2}'
 PYATEROCHKA_PRICE_ELEMENT = 'price-card-unit-value'
-AUCHAN_PRODUCT_LIST_URLS = [
-    "https://www.auchan.ru/product/moloko-domik-v-derevne-ultrapasterizovannoe-3-5-950-g/",
-    "https://www.auchan.ru/product/moloko-pasterizovannoe-selo-zelenoe-3-2-2-l/",
-    "https://www.auchan.ru/product/moloko-past-3-2-955g-dvd-bzmzh/"
-]
-AUCHAN_PRODUCT_LIST_PRICES = [
-    
-]
 AUCHAN_PRICE_REGEX = r'\d+\,\d{2}'
 AUCHAN_PRICE_ELEMENT = 'styles_price'
 
-
-
 def get_driver():
     options = uc.ChromeOptions()
+    options.add_argument('--disable-cache')
+    options.add_argument('--disable-application-cache')
+    options.add_argument('--disable-gpu-shader-disk-cache')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--clear-token-service')
+    options.add_argument('--disable-background-networking')
     driver = uc.Chrome(options=options)
+    driver.delete_all_cookies()
+    
     return driver
+
+def save_page_as_screenshot(driver, filename, directory):
+    try:
+        driver.save_screenshot(f"{directory}/{filename}.png")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        pass
 
 def get_auchan_price(url, driver):
     price = None
@@ -183,38 +165,57 @@ def get_vkusvil_price(url, driver):
     finally:
         return price
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    directory = f"saved_pages/{today}"
+    os.makedirs(directory, exist_ok=True)
+    filename = f'all_products.csv'
+    df = pd.read_csv(filename, encoding='utf-8-sig')
+    df[today] = ''
+    lastIndex = df.columns.get_loc(today)-1
+    last_col = df.columns[lastIndex]
     driver = get_driver()
-    # for url in LENTA_PRODUCT_LIST_URLS:
-    #     price = get_lenta_price(url, driver)
-    #     LENTA_PRODUCT_LIST_PRICES.append(price)
-    #     time.sleep(3)
-    # for url in VKUSVIL_PRODUCT_LIST_URLS:
+    for name, url in LENTA_PRODUCT_LIST_DICT.items():
+        price = get_lenta_price(url, driver)
+        df.loc[df['Product URL'] == url, today] = price
+        last_price = df.loc[df['Product URL'] == url, last_col].values[0]
+        if last_price != price:
+            print(f"{name} - {price} - price change")
+            save_page_as_screenshot(driver, name, directory)
+        else:
+            print(f"{name} - {price} - no change")
+            print(f"Last price: {last_price}")
+        time.sleep(1)
+    # for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
     #     price = get_vkusvil_price(url, driver)
-    #     VKUSVIL_PRODUCT_LIST_PRICES.append(price)
-    #     time.sleep(3)
-    # for url in PEREKRESTOK_PRODUCT_LIST_URLS:
+    #     df.loc[df['Product URL'] == url, today] = price
+    #     print(f"{name} - {price}")
+    #     time.sleep(1)
+    # for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
     #     price = get_perekrestok_price(url, driver)
-    #     PEREKRESTOK_PRODUCT_LIST_PRICES.append(price)
-    #     time.sleep(3)
-    # for url in DIXY_PRODUCT_LIST_URLS:
+    #     df.loc[df['Product URL'] == url, today] = price
+    #     print(f"{name} - {price}")
+    #     time.sleep(1)
+    # for name, url in DIXY_PRODUCT_LIST_DICT.items():
     #     price = get_dixy_price(url, driver)
-    #     DIXY_PRODUCT_LIST_PRICES.append(price)
-    #     time.sleep(3)
-    # for url in PYATEROCHKA_PRODUCT_LIST_URLS:
+    #     df.loc[df['Product URL'] == url, today] = price
+    #     print(f"{name} - {price}")
+    #     time.sleep(1)
+    # for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():
     #     price = get_pyaterochka_price(url, driver)
-    #     PYATEROCHKA_PRODUCT_LIST_PRICES.append(price)
-    #     time.sleep(3)
-    # for url in AUCHAN_PRODUCT_LIST_URLS:
+    #     df.loc[df['Product URL'] == url, today] = price
+    #     print(f"{name} - {price}")
+    #     time.sleep(1)
+    # for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
     #     price = get_auchan_price(url, driver)
-    #     AUCHAN_PRODUCT_LIST_PRICES.append(price)
-    #     time.sleep(3)
-    print(get_pyaterochka_price("https://5ka.ru/product/makarony-barilla-spagetti-n-5-450g--4037644", driver))
+    #     df.loc[df['Product URL'] == url, today] = price
+    #     print(f"{name} - {price}")
+    #     time.sleep(1)
+
+    df.to_csv(filename, index=False, encoding='utf-8-sig')
+    if os.path.exists(directory) and os.path.isdir(directory):
+        if not os.listdir(directory):
+            os.rmdir(directory)
     driver.quit()
-    print(LENTA_PRODUCT_LIST_PRICES)
-    print(VKUSVIL_PRODUCT_LIST_PRICES)
-    print(PEREKRESTOK_PRODUCT_LIST_PRICES)
-    print(DIXY_PRODUCT_LIST_PRICES)
-    print(PYATEROCHKA_PRODUCT_LIST_PRICES)
-    print(AUCHAN_PRODUCT_LIST_PRICES)
