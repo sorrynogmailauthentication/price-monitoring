@@ -38,12 +38,44 @@ DIXY_PRODUCT_LIST_URLS = [
 DIXY_PRODUCT_LIST_PRICES = []
 DIXY_PRICE_REGEX = r'\d+\.\d{2}'
 DIXY_PRICE_ELEMENT = 'card__price-num'
+PYATEROCHKA_PRODUCT_LIST_URLS = [
+    "https://5ka.ru/product/fasol-konservirovannaya-bondyuel-belaya-v-tomatnom--39419/",
+    "https://5ka.ru/product/tomaty-cherri-global-village-selection-chernye-250--4374015/",
+    "https://5ka.ru/product/batonchik-snickers-super-shokoladnyy-s-karamelyu-a--4133363/"
+]
+PYATEROCHKA_PRODUCT_LIST_PRICES = []
+PYATEROCHKA_PRICE_REGEX = r'\d+\.\d{2}'
+PYATEROCHKA_PRICE_ELEMENT = 'price-card-unit-value'
+
 
 
 def get_driver():
     options = uc.ChromeOptions()
     driver = uc.Chrome(options=options)
     return driver
+
+def get_pyaterochka_price(url, driver):
+    price = None
+    try:
+        driver.get(url)
+        time.sleep(1)
+        price_elements = driver.find_elements(By.XPATH, "//meta[@itemprop='price']")
+        if len(price_elements) >= 2:
+            price_text = price_elements[1].get_attribute('content')
+        elif len(price_elements) == 1:
+            price_text = price_elements[0].get_attribute('content')
+        price_match = re.search(PYATEROCHKA_PRICE_REGEX, price_text)
+        if price_match:
+            price = float(price_match.group())
+        else:
+            price = "Pyaterochka wrong pattern"
+            print("Pyaterochka price pattern not found")
+    except Exception as e:
+        print(f"Error: {e}")
+        price = "Pyaterochka error"
+    finally:
+        return price
+
 
 def get_dixy_price(url, driver):
     price = None
@@ -56,11 +88,11 @@ def get_dixy_price(url, driver):
         if price_match:
             price = round(float(price_match.group()), 2)
         else:
-            price = "wrong pattern"
+            price = "Dixy wrong pattern"
             print("Dixy price pattern not found")
     except Exception as e:
         print(f"Error: {e}")
-        price = "error"
+        price = "Dixy error"
     finally:
         return price
 
@@ -76,11 +108,11 @@ def get_perekrestok_price(url, driver):
         if price_match:
             price = float(price_match.group().replace(',', '.'))
         else:
-            price = "wrong pattern`"
+            price = "Perekrestok wrong pattern"
             print("Perekrestok price pattern not found")
     except Exception as e:
         print(f"Error: {e}")
-        price = "error"
+        price = "Perekrestok error"
     finally:
         return price
 
@@ -95,11 +127,11 @@ def get_lenta_price(url, driver):
         if price_match:
             price = float(price_match.group().replace(',', '.'))
         else:
-            price = "wrong pattern`"
+            price = "Lenta wrong pattern"
             print("Lenta price pattern not found")
     except Exception as e:
         print(f"Error: {e}")
-        price = "error"
+        price = "Lenta error"
     finally:
         return price
 
@@ -109,27 +141,21 @@ def get_vkusvil_price(url, driver):
     try:
         driver.get(url)
         time.sleep(1)
-        
-        
-        # Find element where class starts with "Price"
         price_element = driver.find_element(By.XPATH, f"//span[starts-with(@class, '{VKUSVIL_PRICE_ELEMENT}')]")
-        price_text = price_element.text  # This includes ::before content
-        
-        # Extract digits using regex
+        price_text = price_element.text
         price_match = re.search(r'\d+', price_text)
         if price_match:
             price = round(float(price_match.group()), 2)
             print(price)
         else:
-            price = "wrong pattern"
+            price = "VKUSVIL wrong pattern"
             print("VKUSVIL price pattern not found")
     except Exception as e:
         print(f"Error: {e}")
-        price = "error"
+        price = "VKUSVIL error"
     finally:
         return price
 
-# Example usage
 if __name__ == "__main__":
 
     driver = get_driver()
@@ -149,8 +175,13 @@ if __name__ == "__main__":
         price = get_dixy_price(url, driver)
         DIXY_PRODUCT_LIST_PRICES.append(price)
         time.sleep(3)
+    for url in PYATEROCHKA_PRODUCT_LIST_URLS:
+        price = get_pyaterochka_price(url, driver)
+        PYATEROCHKA_PRODUCT_LIST_PRICES.append(price)
+        time.sleep(3)
     driver.quit()
     print(LENTA_PRODUCT_LIST_PRICES)
     print(VKUSVIL_PRODUCT_LIST_PRICES)
     print(PEREKRESTOK_PRODUCT_LIST_PRICES)
     print(DIXY_PRODUCT_LIST_PRICES)
+    print(PYATEROCHKA_PRODUCT_LIST_PRICES)
