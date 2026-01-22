@@ -30,11 +30,40 @@ PEREKRESTOK_PRODUCT_LIST_URLS = [
     "https://www.perekrestok.ru/cat/107/p/grecka-mistral-900g-53673"
 ]
 PEREKRESTOK_PRODUCT_LIST_PRICES = []
+DIXY_PRODUCT_LIST_URLS = [
+    "https://dixy.ru/product/ris-natsional-srednezernyy-dlya-plova-900g-2000274400/",
+    "https://dixy.ru/product/ris-zernyshko-k-zernyshku-proparennyy-5kh80g-400g-2000310624/",
+    "https://dixy.ru/product/ris-zernyshko-k-zernyshku-kruglozernyy-900g-2000180350/"
+]
+DIXY_PRODUCT_LIST_PRICES = []
+DIXY_PRICE_REGEX = r'\d+\.\d{2}'
+DIXY_PRICE_ELEMENT = 'card__price-num'
+
 
 def get_driver():
     options = uc.ChromeOptions()
     driver = uc.Chrome(options=options)
     return driver
+
+def get_dixy_price(url, driver):
+    price = None
+    try:
+        driver.get(url)
+        time.sleep(1)
+        price_element = driver.find_element(By.CLASS_NAME, DIXY_PRICE_ELEMENT)
+        price_text = price_element.get_attribute('textContent')
+        price_match = re.search(DIXY_PRICE_REGEX, price_text)
+        if price_match:
+            price = round(float(price_match.group()), 2)
+        else:
+            price = "wrong pattern"
+            print("Dixy price pattern not found")
+    except Exception as e:
+        print(f"Error: {e}")
+        price = "error"
+    finally:
+        return price
+
 
 def get_perekrestok_price(url, driver):
     price = None
@@ -43,11 +72,9 @@ def get_perekrestok_price(url, driver):
         time.sleep(1)
         price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{PEREKRESTOK_PRICE_ELEMENT}')]")
         price_text = price_element.text
-        print(price_text)
         price_match = re.search(PEREKRESTOK_PRICE_REGEX, price_text)
         if price_match:
             price = float(price_match.group().replace(',', '.'))
-            print(price)
         else:
             price = "wrong pattern`"
             print("Perekrestok price pattern not found")
@@ -67,7 +94,6 @@ def get_lenta_price(url, driver):
         price_match = re.search(LENTA_PRICE_REGEX, price_text)
         if price_match:
             price = float(price_match.group().replace(',', '.'))
-            print(price)
         else:
             price = "wrong pattern`"
             print("Lenta price pattern not found")
@@ -92,7 +118,7 @@ def get_vkusvil_price(url, driver):
         # Extract digits using regex
         price_match = re.search(r'\d+', price_text)
         if price_match:
-            price = float(price_match.group())
+            price = round(float(price_match.group()), 2)
             print(price)
         else:
             price = "wrong pattern"
@@ -119,7 +145,12 @@ if __name__ == "__main__":
         price = get_perekrestok_price(url, driver)
         PEREKRESTOK_PRODUCT_LIST_PRICES.append(price)
         time.sleep(3)
+    for url in DIXY_PRODUCT_LIST_URLS:
+        price = get_dixy_price(url, driver)
+        DIXY_PRODUCT_LIST_PRICES.append(price)
+        time.sleep(3)
     driver.quit()
     print(LENTA_PRODUCT_LIST_PRICES)
     print(VKUSVIL_PRODUCT_LIST_PRICES)
     print(PEREKRESTOK_PRODUCT_LIST_PRICES)
+    print(DIXY_PRODUCT_LIST_PRICES)
