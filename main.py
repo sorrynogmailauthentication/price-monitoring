@@ -1,7 +1,5 @@
 import undetected_chromedriver as uc
 import time
-import json
-from bs4 import BeautifulSoup
 import re
 from selenium.webdriver.common.by import By
 
@@ -46,6 +44,16 @@ PYATEROCHKA_PRODUCT_LIST_URLS = [
 PYATEROCHKA_PRODUCT_LIST_PRICES = []
 PYATEROCHKA_PRICE_REGEX = r'\d+\.\d{2}'
 PYATEROCHKA_PRICE_ELEMENT = 'price-card-unit-value'
+AUCHAN_PRODUCT_LIST_URLS = [
+    "https://www.auchan.ru/product/moloko-domik-v-derevne-ultrapasterizovannoe-3-5-950-g/",
+    "https://www.auchan.ru/product/moloko-pasterizovannoe-selo-zelenoe-3-2-2-l/",
+    "https://www.auchan.ru/product/moloko-past-3-2-955g-dvd-bzmzh/"
+]
+AUCHAN_PRODUCT_LIST_PRICES = [
+    
+]
+AUCHAN_PRICE_REGEX = r'\d+\,\d{2}'
+AUCHAN_PRICE_ELEMENT = 'styles_price'
 
 
 
@@ -53,6 +61,25 @@ def get_driver():
     options = uc.ChromeOptions()
     driver = uc.Chrome(options=options)
     return driver
+
+def get_auchan_price(url, driver):
+    price = None
+    try:
+        driver.get(url)
+        time.sleep(1)
+        price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{AUCHAN_PRICE_ELEMENT}')]")
+        price_text = price_element.text
+        price_match = re.search(AUCHAN_PRICE_REGEX, price_text)
+        if price_match:
+            price = float(price_match.group().replace(',', '.'))
+        else:
+            price = "Achan wrong pattern"
+            print("Achan price pattern not found")
+    except Exception as e:
+        print(f"Error: {e}")
+        price = "Achan error"
+    finally:
+        return price
 
 def get_pyaterochka_price(url, driver):
     price = None
@@ -159,29 +186,35 @@ def get_vkusvil_price(url, driver):
 if __name__ == "__main__":
 
     driver = get_driver()
-    for url in LENTA_PRODUCT_LIST_URLS:
-        price = get_lenta_price(url, driver)
-        LENTA_PRODUCT_LIST_PRICES.append(price)
-        time.sleep(3)
-    for url in VKUSVIL_PRODUCT_LIST_URLS:
-        price = get_vkusvil_price(url, driver)
-        VKUSVIL_PRODUCT_LIST_PRICES.append(price)
-        time.sleep(3)
-    for url in PEREKRESTOK_PRODUCT_LIST_URLS:
-        price = get_perekrestok_price(url, driver)
-        PEREKRESTOK_PRODUCT_LIST_PRICES.append(price)
-        time.sleep(3)
-    for url in DIXY_PRODUCT_LIST_URLS:
-        price = get_dixy_price(url, driver)
-        DIXY_PRODUCT_LIST_PRICES.append(price)
-        time.sleep(3)
-    for url in PYATEROCHKA_PRODUCT_LIST_URLS:
-        price = get_pyaterochka_price(url, driver)
-        PYATEROCHKA_PRODUCT_LIST_PRICES.append(price)
-        time.sleep(3)
+    # for url in LENTA_PRODUCT_LIST_URLS:
+    #     price = get_lenta_price(url, driver)
+    #     LENTA_PRODUCT_LIST_PRICES.append(price)
+    #     time.sleep(3)
+    # for url in VKUSVIL_PRODUCT_LIST_URLS:
+    #     price = get_vkusvil_price(url, driver)
+    #     VKUSVIL_PRODUCT_LIST_PRICES.append(price)
+    #     time.sleep(3)
+    # for url in PEREKRESTOK_PRODUCT_LIST_URLS:
+    #     price = get_perekrestok_price(url, driver)
+    #     PEREKRESTOK_PRODUCT_LIST_PRICES.append(price)
+    #     time.sleep(3)
+    # for url in DIXY_PRODUCT_LIST_URLS:
+    #     price = get_dixy_price(url, driver)
+    #     DIXY_PRODUCT_LIST_PRICES.append(price)
+    #     time.sleep(3)
+    # for url in PYATEROCHKA_PRODUCT_LIST_URLS:
+    #     price = get_pyaterochka_price(url, driver)
+    #     PYATEROCHKA_PRODUCT_LIST_PRICES.append(price)
+    #     time.sleep(3)
+    # for url in AUCHAN_PRODUCT_LIST_URLS:
+    #     price = get_auchan_price(url, driver)
+    #     AUCHAN_PRODUCT_LIST_PRICES.append(price)
+    #     time.sleep(3)
+    print(get_pyaterochka_price("https://5ka.ru/product/makarony-barilla-spagetti-n-5-450g--4037644", driver))
     driver.quit()
     print(LENTA_PRODUCT_LIST_PRICES)
     print(VKUSVIL_PRODUCT_LIST_PRICES)
     print(PEREKRESTOK_PRODUCT_LIST_PRICES)
     print(DIXY_PRODUCT_LIST_PRICES)
     print(PYATEROCHKA_PRODUCT_LIST_PRICES)
+    print(AUCHAN_PRODUCT_LIST_PRICES)
