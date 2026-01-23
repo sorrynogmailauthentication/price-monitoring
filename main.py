@@ -86,7 +86,7 @@ def get_dixy_price(url, driver):
         price_text = price_element.get_attribute('textContent')
         price_match = re.search(DIXY_PRICE_REGEX, price_text)
         if price_match:
-            price = round(float(price_match.group()), 2)
+            price = float(price_match.group())
         else:
             price = "Dixy wrong pattern"
             print("Dixy price pattern not found")
@@ -162,7 +162,7 @@ def get_vkusvil_price(url, driver):
         price_text = price_element.text
         price_match = re.search(r'\d+', price_text)
         if price_match:
-            price = round(float(price_match.group()), 2)
+            price = float(price_match.group())
         else:
             price = "VKUSVIL wrong pattern"
             print("VKUSVIL price pattern not found")
@@ -184,46 +184,46 @@ if __name__ == "__main__":
     lastIndex = df.columns.get_loc(today)-1
     last_col = df.columns[lastIndex]
     driver = get_driver()
-    for name, url in LENTA_PRODUCT_LIST_DICT.items():
-        price = get_lenta_price(url, driver)
-        df.loc[df['Product URL'] == url, today] = price
-        last_price = df.loc[df['Product URL'] == url, last_col].values[0]
-        if str(last_price) != str(price):
-            save_page_as_screenshot(driver, f"LENTA_{name}", directory)
-        time.sleep(1)
+    # for name, url in LENTA_PRODUCT_LIST_DICT.items():
+    #     price = get_lenta_price(url, driver)
+    #     df.loc[df['Product URL'] == url, today] = price
+    #     last_price = df.loc[df['Product URL'] == url, last_col].values[0]
+    #     if str(last_price) != str(price) and type(price) == float:
+    #         save_page_as_screenshot(driver, f"LENTA_{name}", directory)
+    #     time.sleep(1)
     for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
         price = get_vkusvil_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price = df.loc[df['Product URL'] == url, last_col].values[0]
-        if str(last_price) != str(price):
+        if str(last_price) != str(price)[:-2] and type(price) == float:
             save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
         time.sleep(1)
     for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
         price = get_perekrestok_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price = df.loc[df['Product URL'] == url, last_col].values[0]
-        if str(last_price) != str(price):
+        if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PEREKRESTOK_{name}", directory)
         time.sleep(1)
     for name, url in DIXY_PRODUCT_LIST_DICT.items():
         price = get_dixy_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price = df.loc[df['Product URL'] == url, last_col].values[0]
-        if str(last_price) != str(price):
+        if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"DIXY_{name}", directory)
         time.sleep(1)
     for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():
         price = get_pyaterochka_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price = df.loc[df['Product URL'] == url, last_col].values[0]
-        if str(last_price) != str(price):
+        if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
         time.sleep(1)
     for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
         price = get_auchan_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price = df.loc[df['Product URL'] == url, last_col].values[0]
-        if str(last_price) != str(price):
+        if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"AUCHAN_{name}", directory)
         time.sleep(1)
     df.to_csv(filename, index=False, encoding='utf-8-sig')
