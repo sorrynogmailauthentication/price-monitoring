@@ -184,13 +184,13 @@ if __name__ == "__main__":
     lastIndex = df.columns.get_loc(today)-1
     last_col = df.columns[lastIndex]
     driver = get_driver()
-    # for name, url in LENTA_PRODUCT_LIST_DICT.items():
-    #     price = get_lenta_price(url, driver)
-    #     df.loc[df['Product URL'] == url, today] = price
-    #     last_price = df.loc[df['Product URL'] == url, last_col].values[0]
-    #     if str(last_price) != str(price) and type(price) == float:
-    #         save_page_as_screenshot(driver, f"LENTA_{name}", directory)
-    #     time.sleep(1)
+    for name, url in LENTA_PRODUCT_LIST_DICT.items():
+        price = get_lenta_price(url, driver)
+        df.loc[df['Product URL'] == url, today] = price
+        last_price = df.loc[df['Product URL'] == url, last_col].values[0]
+        if str(last_price) != str(price) and type(price) == float:
+            save_page_as_screenshot(driver, f"LENTA_{name}", directory)
+        time.sleep(1)
     for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
         price = get_vkusvil_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
