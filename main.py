@@ -7,6 +7,8 @@ import pandas as pd
 from datetime import datetime
 import os
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 
 LENTA_PRICE_REGEX = r'\d+,\d{2}'
 LENTA_PRICE_ELEMENT = 'main-price title-28-20'
@@ -24,7 +26,6 @@ AUCHAN_PRICE_ELEMENT = 'styles_price'
 def get_driver():
     options = uc.ChromeOptions()
     driver = uc.Chrome(options=options)
-    driver.delete_all_cookies()
     return driver
 
 def save_page_as_screenshot(driver, filename, directory):
@@ -39,28 +40,35 @@ def get_auchan_price(url, driver):
     price = None
     try:
         driver.get(url)
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         time.sleep(1)
         price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{AUCHAN_PRICE_ELEMENT}')]")
+        if not price_element:
+            price = "Achan price element not found"
+            raise Exception(price)
         price_text = price_element.text
         price_match = re.search(AUCHAN_PRICE_REGEX, price_text)
         if price_match:
             price = float(price_match.group().replace(',', '.'))
         else:
             price = "Achan wrong pattern"
-            print("Achan price pattern not found")
+    except TimeoutException:
+        price = "Achan page load timeout"
     except Exception as e:
-        print(f"Error: {e}")
-        price = "Achan error"
+        price = f"Achan error: {e}"
     finally:
         return price
 
 def get_pyaterochka_price(url, driver):
     price = None
     try:
-        time.sleep(1)
         driver.get(url)
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         time.sleep(1)
         price_elements = driver.find_elements(By.XPATH, "//meta[@itemprop='price']")
+        if not price_elements:
+            price = "Pyaterochka price elements not found"
+            raise Exception(price)
         if len(price_elements) >= 2:
             price_text = price_elements[1].get_attribute('content')
         elif len(price_elements) == 1:
@@ -70,10 +78,10 @@ def get_pyaterochka_price(url, driver):
             price = float(price_match.group())
         else:
             price = "Pyaterochka wrong pattern"
-            print("Pyaterochka price pattern not found")
+    except TimeoutException:
+        price = "Pyaterochka page load timeout"
     except Exception as e:
-        print(f"Error: {e}")
-        price = "Pyaterochka error"
+        price = f"Pyaterochka error: {e}"
     finally:
         return price
 
@@ -81,18 +89,22 @@ def get_dixy_price(url, driver):
     price = None
     try:
         driver.get(url)
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         time.sleep(1)
         price_element = driver.find_element(By.CLASS_NAME, DIXY_PRICE_ELEMENT)
+        if not price_element:
+            price = "Dixy price element not found"
+            raise Exception(price)
         price_text = price_element.get_attribute('textContent')
         price_match = re.search(DIXY_PRICE_REGEX, price_text)
         if price_match:
             price = float(price_match.group())
         else:
             price = "Dixy wrong pattern"
-            print("Dixy price pattern not found")
+    except TimeoutException:
+        price = "Dixy page load timeout"
     except Exception as e:
-        print(f"Error: {e}")
-        price = "Dixy error"
+        price = f"Dixy error: {e}"
     finally:
         return price
 
@@ -114,22 +126,24 @@ def click_middle_right(driver):
 def get_perekrestok_price(url, driver):
     price = None
     try:
-        time.sleep(1)
         driver.get(url)
-        time.sleep(1)
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         click_middle_right(driver)
         time.sleep(1)
         price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{PEREKRESTOK_PRICE_ELEMENT}')]")
+        if not price_element:
+            price = "Perekrestok price element not found"
+            raise Exception(price)
         price_text = price_element.text
         price_match = re.search(PEREKRESTOK_PRICE_REGEX, price_text)
         if price_match:
             price = float(price_match.group().replace(',', '.'))
         else:
             price = "Perekrestok wrong pattern"
-            print("Perekrestok price pattern not found")
+    except TimeoutException:
+        price = "Perekrestok page load timeout"
     except Exception as e:
-        print(f"Error: {e}")
-        price = "Perekrestok error"
+        price = f"Perekrestok error: {e}"
     finally:
         return price
 
@@ -137,18 +151,22 @@ def get_lenta_price(url, driver):
     price = None
     try:
         driver.get(url)
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         time.sleep(1)
         price_element = driver.find_element(By.XPATH, f"//span[starts-with(@class, '{LENTA_PRICE_ELEMENT}')]")
+        if not price_element:
+            price = "Lenta price element not found"
+            raise Exception(price)
         price_text = price_element.text
         price_match = re.search(LENTA_PRICE_REGEX, price_text)
         if price_match:
             price = float(price_match.group().replace(',', '.'))
         else:
             price = "Lenta wrong pattern"
-            print("Lenta price pattern not found")
+    except TimeoutException:
+        price = "Lenta page load timeout"
     except Exception as e:
-        print(f"Error: {e}")
-        price = "Lenta error"
+        price = f"Lenta error: {e}"
     finally:
         return price
 
@@ -157,18 +175,22 @@ def get_vkusvil_price(url, driver):
     price = None
     try:
         driver.get(url)
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         time.sleep(1)
         price_element = driver.find_element(By.XPATH, f"//span[starts-with(@class, '{VKUSVIL_PRICE_ELEMENT}')]")
+        if not price_element:
+            price = "VKUSVIL price element not found"
+            raise Exception(price)
         price_text = price_element.text
         price_match = re.search(r'\d+', price_text)
         if price_match:
             price = float(price_match.group())
         else:
             price = "VKUSVIL wrong pattern"
-            print("VKUSVIL price pattern not found")
+    except TimeoutException:
+        price = "VKUSVIL page load timeout"
     except Exception as e:
-        print(f"Error: {e}")
-        price = "VKUSVIL error"
+        price = f"VKUSVIL error: {e}"
     finally:
         return price
 
@@ -184,6 +206,8 @@ if __name__ == "__main__":
     lastIndex = df.columns.get_loc(today)-1
     last_col = df.columns[lastIndex]
     driver = get_driver()
+    driver.delete_all_cookies()
+    time.sleep(2)
     for name, url in LENTA_PRODUCT_LIST_DICT.items():
         price = get_lenta_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
