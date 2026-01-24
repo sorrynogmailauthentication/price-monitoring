@@ -67,7 +67,10 @@ def get_pyaterochka_price(url, driver):
         time.sleep(1)
         price_elements = driver.find_elements(By.XPATH, "//meta[@itemprop='price']")
         if not price_elements:
-            raise ValueError()
+            not_in_stock = driver.find_element(By.XPATH, "//span//h2[contains(text(), 'Нет в наличии')]")
+            if not_in_stock:
+                raise ValueError("Not in stock")
+            raise ValueError("Pyaterochka price element not found")
         if len(price_elements) >= 2:
             price_text = price_elements[1].get_attribute('content')
         elif len(price_elements) == 1:
@@ -79,8 +82,8 @@ def get_pyaterochka_price(url, driver):
             price = "Pyaterochka wrong pattern"
     except TimeoutException:
         price = "Pyaterochka page load timeout"
-    except ValueError:
-        price = "Pyaterochka price elements not found"
+    except ValueError as e:
+        price = e.args[0]
     except Exception:
         price = f"Pyaterochka error"
     finally:
@@ -134,7 +137,7 @@ def get_perekrestok_price(url, driver):
         time.sleep(1)
         price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{PEREKRESTOK_PRICE_ELEMENT}')]")
         if not price_element:
-            raise ValueError()
+            raise ValueError("Perekrestok price element not found")
         price_text = price_element.text
         price_match = re.search(PEREKRESTOK_PRICE_REGEX, price_text)
         if price_match:
@@ -143,8 +146,8 @@ def get_perekrestok_price(url, driver):
             price = "Perekrestok wrong pattern"
     except TimeoutException:
         price = "Perekrestok page load timeout"
-    except ValueError:
-        price = "Perekrestok price element not found"
+    except ValueError as e:
+        price = e.args[0]
     except Exception:
         price = f"Perekrestok error"
     finally:
@@ -156,10 +159,14 @@ def get_lenta_price(url, driver):
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         time.sleep(1)
-        price_element = driver.find_element(By.XPATH, f"//span[starts-with(@class, '{LENTA_PRICE_ELEMENT}')]")
-        if not price_element:
-            raise ValueError()
-        price_text = price_element.text
+        price_elements = driver.find_elements(By.XPATH, f"//span[starts-with(@class, '{LENTA_PRICE_ELEMENT}')]")
+        if not price_elements:
+            print("Lenta price element not found")
+            not_in_stock = driver.find_elements(By.XPATH, "//p[@class='out-of-stock-goods']")
+            if not_in_stock:
+                raise ValueError("Not in stock")
+            raise ValueError("Lenta price element not found")
+        price_text = price_elements[0].text
         price_match = re.search(LENTA_PRICE_REGEX, price_text)
         if price_match:
             price = float(price_match.group().replace(',', '.'))
@@ -167,10 +174,10 @@ def get_lenta_price(url, driver):
             price = "Lenta wrong pattern"
     except TimeoutException:
         price = "Lenta page load timeout"
-    except ValueError:
-        price = "Lenta price element not found"
+    except ValueError as e:
+        price = e.args[0]
     except Exception:
-        price = f"Lenta error"
+        price = f"Lenta error {e}"
     finally:
         return price
 
@@ -199,7 +206,6 @@ def get_vkusvil_price(url, driver):
     finally:
         return price
 
-
 if __name__ == "__main__":
     
     today = datetime.now().strftime('%Y-%m-%d')
@@ -217,7 +223,7 @@ if __name__ == "__main__":
         price = get_lenta_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
-        last_price = last_price_series.values[0] if not last_price_series.empty else None
+        last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"LENTA_{name}", directory)
         time.sleep(1)
@@ -225,7 +231,7 @@ if __name__ == "__main__":
         price = get_vkusvil_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
-        last_price = last_price_series.values[0] if not last_price_series.empty else None
+        last_price = last_price_series.values[0]
         if str(last_price) != str(price)[:-2] and type(price) == float:
             save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
         time.sleep(1)
@@ -233,7 +239,7 @@ if __name__ == "__main__":
         price = get_perekrestok_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
-        last_price = last_price_series.values[0] if not last_price_series.empty else None
+        last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PEREKRESTOK_{name}", directory)
         time.sleep(1)
@@ -241,7 +247,7 @@ if __name__ == "__main__":
         price = get_dixy_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
-        last_price = last_price_series.values[0] if not last_price_series.empty else None
+        last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"DIXY_{name}", directory)
         time.sleep(1)
@@ -249,7 +255,7 @@ if __name__ == "__main__":
         price = get_pyaterochka_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
-        last_price = last_price_series.values[0] if not last_price_series.empty else None
+        last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
         time.sleep(1)
@@ -257,7 +263,7 @@ if __name__ == "__main__":
         price = get_auchan_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
-        last_price = last_price_series.values[0] if not last_price_series.empty else None
+        last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"AUCHAN_{name}", directory)
         time.sleep(1)
@@ -266,3 +272,5 @@ if __name__ == "__main__":
         if not os.listdir(directory):
             os.rmdir(directory)
     driver.quit()
+
+
