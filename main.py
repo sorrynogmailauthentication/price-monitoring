@@ -25,12 +25,16 @@ AUCHAN_PRICE_ELEMENT = 'styles_price'
 
 def get_driver():
     options = uc.ChromeOptions()
+    options.add_argument('--disable-plugins')
+    options.add_argument('--disable-extensions')
+    options.add_argument('--no-sandbox')
+    options.page_load_strategy = 'eager'
     driver = uc.Chrome(options=options)
     return driver
 
 def save_page_as_screenshot(driver, filename, directory):
     try:
-        driver.save_screenshot(f"{directory}/{filename}.png")
+        driver.save_screenshot(f"{directory}/{filename}_{datetime.now().strftime('%Y-%m-%d')}.png")
     except Exception as e:
         print(f"Error: {e}")
     finally:
@@ -64,7 +68,7 @@ def get_pyaterochka_price(url, driver):
     try:
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-        time.sleep(1)
+        time.sleep(1.2)
         price_elements = driver.find_elements(By.XPATH, "//meta[@itemprop='price']")
         if not price_elements:
             not_in_stock = driver.find_element(By.XPATH, "//span//h2[contains(text(), 'Нет в наличии')]")
@@ -161,7 +165,6 @@ def get_lenta_price(url, driver):
         time.sleep(1)
         price_elements = driver.find_elements(By.XPATH, f"//span[starts-with(@class, '{LENTA_PRICE_ELEMENT}')]")
         if not price_elements:
-            print("Lenta price element not found")
             not_in_stock = driver.find_elements(By.XPATH, "//p[@class='out-of-stock-goods']")
             if not_in_stock:
                 raise ValueError("Not in stock")
@@ -187,7 +190,7 @@ def get_vkusvil_price(url, driver):
     try:
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-        time.sleep(1)
+        time.sleep(0.5)
         price_element = driver.find_element(By.XPATH, f"//span[starts-with(@class, '{VKUSVIL_PRICE_ELEMENT}')]")
         if not price_element:
             raise ValueError()
@@ -226,7 +229,7 @@ if __name__ == "__main__":
         last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"LENTA_{name}", directory)
-        time.sleep(1)
+        time.sleep(0.5)
     for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
         price = get_vkusvil_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -234,7 +237,7 @@ if __name__ == "__main__":
         last_price = last_price_series.values[0]
         if str(last_price) != str(price)[:-2] and type(price) == float:
             save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
-        time.sleep(1)
+        time.sleep(0.5)
     for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
         price = get_perekrestok_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -242,7 +245,7 @@ if __name__ == "__main__":
         last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PEREKRESTOK_{name}", directory)
-        time.sleep(1)
+        time.sleep(0.5)
     for name, url in DIXY_PRODUCT_LIST_DICT.items():
         price = get_dixy_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -250,7 +253,7 @@ if __name__ == "__main__":
         last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"DIXY_{name}", directory)
-        time.sleep(1)
+        time.sleep(0.5)
     for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():
         price = get_pyaterochka_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -258,7 +261,7 @@ if __name__ == "__main__":
         last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
-        time.sleep(1)
+        time.sleep(0.5)
     for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
         price = get_auchan_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -266,7 +269,7 @@ if __name__ == "__main__":
         last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"AUCHAN_{name}", directory)
-        time.sleep(1)
+        time.sleep(0.5)
     df.to_csv(filename, index=False, encoding='utf-8-sig')
     if os.path.exists(directory) and os.path.isdir(directory):
         if not os.listdir(directory):
