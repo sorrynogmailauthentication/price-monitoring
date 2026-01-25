@@ -197,7 +197,7 @@ def get_vkusvil_price(url, driver):
         price_text = price_element.text
         price_match = re.search(r'\d+', price_text)
         if price_match:
-            price = float(price_match.group())
+            price = price_match.group()
         else:
             price = "VKUSVIL wrong pattern"
     except TimeoutException:
@@ -235,7 +235,7 @@ if __name__ == "__main__":
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
         last_price = last_price_series.values[0]
-        if str(last_price) != str(price)[:-2] and type(price) == float:
+        if str(last_price) != str(price):
             save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
         time.sleep(0.5)
     for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
