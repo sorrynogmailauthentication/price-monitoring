@@ -23,13 +23,15 @@ PYATEROCHKA_PRICE_ELEMENT = 'price-card-unit-value'
 AUCHAN_PRICE_REGEX = r'\d+\,\d{2}'
 AUCHAN_PRICE_ELEMENT = 'styles_price'
 
+CHROMIUM_VERSION = 144
+
 def get_driver():
     options = uc.ChromeOptions()
     options.add_argument('--disable-plugins')
     options.add_argument('--disable-extensions')
     options.add_argument('--no-sandbox')
     options.page_load_strategy = 'eager'
-    driver = uc.Chrome(options=options)
+    driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
 def save_page_as_screenshot(driver, filename, directory):
