@@ -101,7 +101,7 @@ VKUSVIL_PRODUCT_LIST_DICT = {
     "https://vkusvill.ru/goods/kapusta-belokochannaya-602.html",
     "Свекла":
     "https://vkusvill.ru/goods/svekla-611.html",
-    "Чеснок,100 г":
+    "Чеснок, 100 г":
     "https://vkusvill.ru/goods/chesnok-100-g-35065.html",
     "Яблоко Гала":
     "https://vkusvill.ru/goods/yabloko-gala-15846.html",
@@ -143,7 +143,7 @@ VKUSVIL_PRODUCT_LIST_DICT = {
 
 PEREKRESTOK_PRODUCT_LIST_DICT = {
     "Макароны Makfa Спирали 450г" : "https://www.perekrestok.ru/cat/105/p/makarony-makfa-spirali-450g-62190",
-    "Гречка Увелка Экстра, 5х80г" : "https://www.perekrestok.ru/cat/107/p/grecka-uvelka-ekstra-5h80g-3603166",
+    "Крупа гречневая Увелка Экстра, 5х80г" : "https://www.perekrestok.ru/cat/107/p/grecka-uvelka-ekstra-5h80g-3603166",
     "Мука пшеничная MAKFA хлебопекарная высший сорт, 2кг":
     "https://www.perekrestok.ru/cat/106/p/muka-makfa-vyssego-sorta-2kg-91304",
     "Хлопья овсяные ГЕРКУЛЕС Монастырский, 500г":
@@ -252,7 +252,7 @@ DIXY_PRODUCT_LIST_DICT = {
     "https://dixy.ru/product/tvorog-prostokvashino-2-200g-2000024202/",
     "Сметана Простоквашино 20% 300г":
     "https://dixy.ru/product/smetana-prostokvashino-20-300g-2000166052/",
-    "Сливочное масло Экомилк ГОСТ 82,5% высший сорт 180г":
+    "Масло сливочное Экомилк ГОСТ 82,5% высший сорт 180г":
     "https://dixy.ru/product/slivochnoe-maslo-ekomilk-gost-825-vysshiy-sort-180g-10j0079578/",
     "Сыр Брест-Литовск Классический 45% 200г":
     "https://dixy.ru/product/syr-brest-litovsk-klassicheskiy-45-200g-2000184737/",
@@ -283,7 +283,7 @@ DIXY_PRODUCT_LIST_DICT = {
 
 PYATEROCHKA_PRODUCT_LIST_DICT = {
    "Макароны Makfa Спирали 450г" : "https://5ka.ru/product/makarony-makfa-spirali-450g--62190/",
-   "Гречка Увелка Экстра 5х80г": "https://5ka.ru/product/grechka-uvelka-ekstra-5kh80g--3603166/",
+   "Крупа гречневая Увелка Экстра 5х80г": "https://5ka.ru/product/grechka-uvelka-ekstra-5kh80g--3603166/",
    "Мука пшеничная MAKFA хлебопекарная высший сорт, 2кг": "https://5ka.ru/product/muka-makfa-vysshego-sorta-2kg--91304/",
    "Хлопья овсяные ГЕРКУЛЕС Монастырский, 500г": "https://5ka.ru/product/khlopya-ovsyanye-russkiy-produkt-gerkules-monastyr--3421663/",
    "Сахар, 1кг": "https://5ka.ru/product/sakhar-belyy-pesok-1kg--3230933/",
@@ -368,15 +368,15 @@ AUCHAN_PRODUCT_LIST_DICT = {
     "https://www.auchan.ru/product/kartofel_belyy_ves/",
     "Лук репчатый, вес":
     "https://www.auchan.ru/product/luk_repchatyy_ves/",
-    "Социальный товар Морковь, вес":
+    "Морковь, вес":
     "https://www.auchan.ru/product/morkov_ves/",
-    "Социальный товар Капуста белокочанная, вес":
+    "Капуста белокочанная, вес":
     "https://www.auchan.ru/product/kapusta_bk_ves/",
     "Свекла, вес":
     "https://www.auchan.ru/product/svekla_ves/",
-    "Чеснок, 3 шт":
+    "Чеснок, 3шт":
     "https://www.auchan.ru/product/chesnok-v-upakovke-3-sht/",
-    "Социальный товар Яблоки пакет ~ 1,5 кг":
+    "Яблоки пакет ~ 1,5 кг":
     "https://www.auchan.ru/product/yabloki-voshod-1-kg/",
     "Молоко питьевое «Домик в деревне»  3,5% БЗМЖ, 950 г":
     "https://www.auchan.ru/product/moloko-domik-v-derevne-ultrapasterizovannoe-3-5-950-g/",
