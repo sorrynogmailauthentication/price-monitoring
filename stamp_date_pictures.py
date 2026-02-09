@@ -1,7 +1,5 @@
 import os
 from PIL import Image, ImageDraw, ImageFont
-from PIL.ExifTags import TAGS
-from datetime import datetime
 import re
 
 INPUT_DIRECTORY = "stamp_photos\pre_stamp"
