@@ -67,8 +67,19 @@ LENTA_PRODUCT_LIST_DICT = {
     "Бананы, весовые":
     "https://lenta.com/product/banany-ves-ekvador-11230/",
     "Печенье ЮБИЛЕЙНОЕ молочное с глазурью, 116г":
-    "https://lenta.com/product/pechene-molochnoe-s-molochnojj-glazuryu-rossiya-116g-349126/"
-
+    "https://lenta.com/product/pechene-molochnoe-s-molochnojj-glazuryu-rossiya-116g-349126/",
+    "Огурцы среднеплодные колючие, весовые, 0.5 кг":
+    "https://lenta.com/product/ogurcy-sredneplodnye-kolyuchie-ves-165796/",
+    "Томаты тепличные, весовые, 0.5 кг":
+    "https://lenta.com/product/tomaty-teplichnye-ves-rossiya-135324/",
+    "Вода минеральная ЕССЕНТУКИ №4":
+    "https://lenta.com/product/voda-mineralnaya-4-gost-pit-lecheb-stol-gaz-pet-rossiya-1l-581391/",
+    "Рис круглозерный МИСТРАЛЬ Кубань":
+    "https://lenta.com/product/ris-kuban-1-sort-rossiya-900g-14382/",
+    "Крупа гречневая МИСТРАЛЬ ядрица":
+    "https://lenta.com/product/krupa-grechnevaya-yadrica-vs-rossiya-900g-14384/",
+    "Яйцо куриное ОКСКОЕ С2":
+    "https://lenta.com/product/yajjco-kurinoe-s2-rossiya-10sht-747658/",
 }
 
 VKUSVIL_PRODUCT_LIST_DICT = {
@@ -138,7 +149,19 @@ VKUSVIL_PRODUCT_LIST_DICT = {
     "Бананы, весовые":
     "https://vkusvill.ru/goods/banany-731.html",
     "Печенье Юбилейное Молочное в глазури 116 г":
-    "https://vkusvill.ru/goods/pechene-yubileynoe-molochnoe-v-glazuri-116-g-69284.html"
+    "https://vkusvill.ru/goods/pechene-yubileynoe-molochnoe-v-glazuri-116-g-69284.html",
+    "Огурцы среднеплодные":
+    "https://vkusvill.ru/goods/ogurtsy-sredneplodnye-17039.html",
+    "Томаты красные":
+    "https://vkusvill.ru/goods/tomaty-krasnye-15456.html",
+    "Вода минеральная лечебно-столовая Ессентуки №4":
+    "https://vkusvill.ru/goods/voda-mineralnaya-lechebno-stolovaya-essentuki-4-prirodnaya-pitevaya-gazirovannaya-pet-1-l-60338.html",
+    "Рис Мистраль Кубань 900 г":
+    "https://vkusvill.ru/goods/ris-mistral-kuban-900-g-32664.html",
+    "Крупа гречневая Мистраль Ядрица":
+    "https://vkusvill.ru/goods/krupa-grechnevaya-mistral-yadritsa-900-g-32680.html",
+    "Яйцо куриное С2":
+    "https://vkusvill.ru/goods/yaytso-kurinoe-s2-22659.html",
 }
 
 PEREKRESTOK_PRODUCT_LIST_DICT = {
@@ -209,7 +232,19 @@ PEREKRESTOK_PRODUCT_LIST_DICT = {
     "Бананы":
     "https://www.perekrestok.ru/cat/153/p/banany-3757",
     "Печенье Юбилейное молочное витаминизированное с глазурью, 116г":
-    "https://www.perekrestok.ru/cat/197/p/pecene-ubilejnoe-molocnoe-vitaminizirovannoe-s-glazuru-116g-3472180"
+    "https://www.perekrestok.ru/cat/197/p/pecene-ubilejnoe-molocnoe-vitaminizirovannoe-s-glazuru-116g-3472180",
+    "Огурцы гладкие среднеплодные":
+    "https://www.perekrestok.ru/cat/1589/p/ogurcy-gladkie-sredneplodnye-2098997",
+    "Томаты красные круглые":
+    "https://www.perekrestok.ru/cat/150/p/tomaty-krasnye-kruglye-2166",
+    "Вода Ессентуки №4 минеральная":
+    "https://www.perekrestok.ru/cat/208/p/voda-essentuki-no4-mineralnaya-2168",
+    "Рис Мистраль Кубань":
+    "https://www.perekrestok.ru/cat/107/p/ris-mistral-kuban-belyj-kruglozernyj-900g-3766",
+    "Гречка Мистраль, 900г":
+    "https://www.perekrestok.ru/cat/107/p/grecka-mistral-900g-53673",
+    "Яйцо куриное Окское столовое С2, 10шт":
+    "https://www.perekrestok.ru/cat/1589/p/ajco-kurinoe-okskoe-stolovoe-s2-10st-3355250",
 }
 
 DIXY_PRODUCT_LIST_DICT = {
@@ -277,8 +312,21 @@ DIXY_PRODUCT_LIST_DICT = {
     "Бананы спелые":
     "https://dixy.ru/product/banany-spelye-10e0074360/",
     "Печенье Юбилейное Молочное с молочной глазурью 116г":
-    "https://dixy.ru/product/pechene-yubileynoe-molochnoe-s-molochnoy-glazuryu-116g-2000223622/"
-
+    "https://dixy.ru/product/pechene-yubileynoe-molochnoe-s-molochnoy-glazuryu-116g-2000223622/",
+    "Огурцы среднеплодные гладкие":
+    "https://dixy.ru/product/ogurtsy-sredneplodnye-gladkie-2000271421/",
+    "Томаты красные":
+    "https://dixy.ru/product/tomaty-krasnye-10e0075437/",
+    "Вода минеральная Ессентуки №4":
+    "https://dixy.ru/product/voda-mineralnaya-essentuki-4-1l-2000346018/",
+    "Рис Мистраль Кубань круглозерный 900г":
+    "https://dixy.ru/product/ris-mistral-kuban-kruglozernyy-900g-tst0042579/",
+    "Крупа Мистраль гречневая ядрица 900г":
+    "https://dixy.ru/product/krupa-mistral-grechnevaya-yadritsa-900g-tst0042599/",
+    "Яйцо куриное Окское столовое С2 10шт":
+    "https://dixy.ru/product/yaytso-kurinoe-okskoe-stolovoe-s2-10sht-2000194707/",
+    "Яйцо куриное столовое отборное 10шт":
+    "https://dixy.ru/product/yaytso-kurinoe-stolovoe-otbornoe-v-assortimente-10sht-di00079293/",
 }
 
 PYATEROCHKA_PRODUCT_LIST_DICT = {
@@ -342,7 +390,21 @@ PYATEROCHKA_PRODUCT_LIST_DICT = {
    "Бананы Global Village":
    "https://5ka.ru/product/banany-global-village--809/",
    "Печенье Юбилейное витаминизированное ореховое с глазурью 116г":
-   "https://5ka.ru/product/pechene-yubileynoe-vitaminizirovannoe-orekhovoe-s--3471169/"
+   "https://5ka.ru/product/pechene-yubileynoe-vitaminizirovannoe-orekhovoe-s--3471169/",
+   "Огурцы среднеплодные":
+   "https://5ka.ru/product/ogurtsy-sredneplodnye--4314547/",
+   "Томаты":
+   "https://5ka.ru/product/tomaty--202/",
+   "Вода Ессентуки №4 минеральная":
+   "https://5ka.ru/product/voda-essentuki-4-mineralnaya-5l--3373717/",
+   "Рис Мистраль Кубань":
+   "https://5ka.ru/product/ris-mistral-kuban-belyy-kruglozyornyy-900g--3766/",
+   "Гречка Мистраль 900г":
+   "https://5ka.ru/product/grechka-mistral-900g--53673/",
+   "Яйцо Окское столовое С2 10шт":
+   "https://5ka.ru/product/yaytso-okskoe-stolovoe-s2-10sht--3355250/",
+   "Яйцо куриное Красная Цена С1 10шт":
+   "https://5ka.ru/product/yaytso-kurinoe-krasnaya-tsena-s1-10sht--3934851/",
 }
 
 
@@ -411,6 +473,19 @@ AUCHAN_PRODUCT_LIST_DICT = {
     "Бананы, вес":
     "https://www.auchan.ru/product/banany_ves/",
     "Печенье «Юбилейное» молочное в молочной глазури, 116 г":
-    "https://www.auchan.ru/product/pechene-yubileynoe-molochnoe-s-molochnoy-glazuryu-116-g/"
-
+    "https://www.auchan.ru/product/pechene-yubileynoe-molochnoe-s-molochnoy-glazuryu-116-g/",
+    "Огурцы ТСХА, вес":
+    "https://www.auchan.ru/product/ogurec_tsha_ves/",
+    "Томаты круглые красные":
+    "https://www.auchan.ru/product/tomat__ves/",
+    "Вода минеральная «Ессентуки» №4":
+    "https://www.auchan.ru/product/essentuki_4_1l_pet/",
+    "Рис круглозерный «Мистраль» Кубань":
+    "https://www.auchan.ru/product/ris-mistral-kuban-kruglozernyy-900-g/",
+    "Крупа гречневая «Мистраль», 900 г":
+    "https://www.auchan.ru/product/grechka-mistral-yadrica-900-g/",
+    "Яйца куриные «Окское» столовые С2":
+    "https://www.auchan.ru/product/yayco-stolovoe-okskoe-s2-10-sht/",
+    "Яйца куриные «Каждый день» СО":
+    "https://www.auchan.ru/product/kd-yayco-kurinoe-so-10-sht-3/",
 }

@@ -232,6 +232,7 @@ if __name__ == "__main__":
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"LENTA_{name}", directory)
         time.sleep(0.5)
+    time.sleep(1)
     for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
         price = get_vkusvil_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -240,6 +241,7 @@ if __name__ == "__main__":
         if str(last_price) != str(price):
             save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
         time.sleep(0.5)
+    time.sleep(1)
     for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
         price = get_perekrestok_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -248,6 +250,7 @@ if __name__ == "__main__":
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PEREKRESTOK_{name}", directory)
         time.sleep(0.5)
+    time.sleep(1)
     for name, url in DIXY_PRODUCT_LIST_DICT.items():
         price = get_dixy_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -256,6 +259,7 @@ if __name__ == "__main__":
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"DIXY_{name}", directory)
         time.sleep(0.5)
+    time.sleep(1)
     for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():
         price = get_pyaterochka_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
@@ -264,6 +268,7 @@ if __name__ == "__main__":
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
         time.sleep(0.5)
+    time.sleep(1)
     for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
         price = get_auchan_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price

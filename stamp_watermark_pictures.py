@@ -5,7 +5,7 @@ INPUT_DIRECTORY = "stamp_photos\\pre_stamp"
 OUTPUT_DIRECTORY = "stamp_photos\\post_stamp"
 
 # Your watermark text (e.g. your name, brand, "© 2026")
-WATERMARK_TEXT = "Телеграм Ценалитика"
+WATERMARK_TEXT = "Ценалитика"
 
 def stamp_watermark_on_images(directory, output_dir, watermark_text=WATERMARK_TEXT, opacity=0.08):
     if not os.path.exists(output_dir):
@@ -19,7 +19,7 @@ def stamp_watermark_on_images(directory, output_dir, watermark_text=WATERMARK_TE
             txt_layer = Image.new("RGBA", img.size, (255, 255, 255, 0))
             draw = ImageDraw.Draw(txt_layer)
             width, height = img.size
-            font_size = int(height * 0.08)
+            font_size = int(height * 0.1)
             try:
                 font = ImageFont.truetype("arial.ttf", font_size)
             except IOError:
