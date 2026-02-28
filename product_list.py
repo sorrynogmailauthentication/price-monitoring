@@ -238,7 +238,7 @@ PEREKRESTOK_PRODUCT_LIST_DICT = {
     "Томаты красные круглые":
     "https://www.perekrestok.ru/cat/150/p/tomaty-krasnye-kruglye-2166",
     "Вода Ессентуки №4 минеральная":
-    "https://www.perekrestok.ru/cat/208/p/voda-essentuki-no4-mineralnaya-2168",
+    "https://www.perekrestok.ru/cat/208/p/voda-essentuki-no4-mineralnaa-prirodnaa-pitevaa-lecebno-stolovaa-gazirovannaa-1l-3977407",
     "Рис Мистраль Кубань":
     "https://www.perekrestok.ru/cat/107/p/ris-mistral-kuban-belyj-kruglozernyj-900g-3766",
     "Гречка Мистраль, 900г":
@@ -396,7 +396,7 @@ PYATEROCHKA_PRODUCT_LIST_DICT = {
    "Томаты":
    "https://5ka.ru/product/tomaty--202/",
    "Вода Ессентуки №4 минеральная":
-   "https://5ka.ru/product/voda-essentuki-4-mineralnaya-5l--3373717/",
+   "https://5ka.ru/product/voda-essentuki-4-mineralnaya-lechebno-stolovaya-ga--3977407/",
    "Рис Мистраль Кубань":
    "https://5ka.ru/product/ris-mistral-kuban-belyy-kruglozyornyy-900g--3766/",
    "Гречка Мистраль 900г":

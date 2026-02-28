@@ -231,6 +231,8 @@ if __name__ == "__main__":
         last_price = last_price_series.values[0]
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"LENTA_{name}", directory)
+        if url == "https://lenta.com/product/makarony-spirali-gra-vs-rossiya-450g-117806/":
+            time.sleep(1)
         time.sleep(0.5)
     time.sleep(1)
     for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
@@ -268,7 +270,7 @@ if __name__ == "__main__":
         if str(last_price) != str(price) and type(price) == float:
             save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
         time.sleep(0.5)
-    time.sleep(1)
+    time.sleep(2)
     for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
         price = get_auchan_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
