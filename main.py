@@ -12,8 +12,8 @@ from selenium.common.exceptions import TimeoutException
 
 LENTA_PRICE_REGEX = r'\d+,\d{2}'
 LENTA_PRICE_ELEMENT = 'main-price title-28-20'
-VKUSVIL_PRICE_REGEX = r'\d+(?=&)'
 VKUSVIL_PRICE_ELEMENT = 'Price Price--lg'
+VKUSVIL_PRICE_REGEX = r'\d+(?:\s+\d+)*'
 PEREKRESTOK_PRICE_ELEMENT = 'price-card-unit-value'
 PEREKRESTOK_PRICE_REGEX = r'\d+,\d{2}'
 DIXY_PRICE_REGEX = r'\d+\.\d{2}'
@@ -22,15 +22,14 @@ PYATEROCHKA_PRICE_REGEX = r'\d+\.\d{2}'
 PYATEROCHKA_PRICE_ELEMENT = 'price-card-unit-value'
 AUCHAN_PRICE_REGEX = r'\d+\,\d{2}'
 AUCHAN_PRICE_ELEMENT = 'styles_price'
+PEREKRESTOK_URL = "https://www.perekrestok.ru/"
+PYATEROCHKA_URL = "https://5ka.ru/"
+AUCHAN_URL = "https://www.auchan.ru/"
 
-CHROMIUM_VERSION = 144
+CHROMIUM_VERSION = 145
 
 def get_driver():
     options = uc.ChromeOptions()
-    options.add_argument('--disable-plugins')
-    options.add_argument('--disable-extensions')
-    options.add_argument('--no-sandbox')
-    options.page_load_strategy = 'eager'
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
@@ -70,7 +69,6 @@ def get_pyaterochka_price(url, driver):
     try:
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-        time.sleep(1.2)
         price_elements = driver.find_elements(By.XPATH, "//meta[@itemprop='price']")
         if not price_elements:
             not_in_stock = driver.find_element(By.XPATH, "//span//h2[contains(text(), 'Нет в наличии')]")
@@ -140,7 +138,6 @@ def get_perekrestok_price(url, driver):
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         click_middle_right(driver)
-        time.sleep(1)
         price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{PEREKRESTOK_PRICE_ELEMENT}')]")
         if not price_element:
             raise ValueError("Perekrestok price element not found")
@@ -158,6 +155,13 @@ def get_perekrestok_price(url, driver):
         price = f"Perekrestok error"
     finally:
         return price
+
+def defeat_perekrestok_pyaterochka_robot_protection(driver, url):
+    driver.get(url)
+    time.sleep(3)
+    if "xpvnsulc" in driver.current_url:
+        driver.find_element("css selector", "label[for='is-robot']").click()
+        time.sleep(3)
 
 def get_lenta_price(url, driver):
     price = None
@@ -197,9 +201,9 @@ def get_vkusvil_price(url, driver):
         if not price_element:
             raise ValueError()
         price_text = price_element.text
-        price_match = re.search(r'\d+', price_text)
+        price_match = re.search(VKUSVIL_PRICE_REGEX, price_text)
         if price_match:
-            price = price_match.group()
+            price = price_match.group().replace('\u2009', '')
         else:
             price = "VKUSVIL wrong pattern"
     except TimeoutException:
@@ -238,13 +242,19 @@ if __name__ == "__main__":
     for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
         price = get_vkusvil_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
+        print(price)
         last_price_series = df.loc[df['Product URL'] == url, last_col]
         last_price = last_price_series.values[0]
+        print(last_price)
         if str(last_price) != str(price):
             save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
         time.sleep(0.5)
     time.sleep(1)
+    encountered_perekrestok_robot_protection = False
     for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
+        if not encountered_perekrestok_robot_protection:
+            defeat_perekrestok_pyaterochka_robot_protection(driver, PEREKRESTOK_URL)
+            encountered_perekrestok_robot_protection = True
         price = get_perekrestok_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
@@ -262,7 +272,12 @@ if __name__ == "__main__":
             save_page_as_screenshot(driver, f"DIXY_{name}", directory)
         time.sleep(0.5)
     time.sleep(1)
+    encountered_pyaterochka_robot_protection = 0
     for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():
+        if encountered_pyaterochka_robot_protection < 1:
+            defeat_perekrestok_pyaterochka_robot_protection(driver, PYATEROCHKA_URL)
+            encountered_pyaterochka_robot_protection += 1
+            time.sleep(3)
         price = get_pyaterochka_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
@@ -271,7 +286,11 @@ if __name__ == "__main__":
             save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
         time.sleep(0.5)
     time.sleep(2)
+    encountered_auchan_robot_protection = False
     for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
+        if not encountered_auchan_robot_protection:
+            defeat_perekrestok_pyaterochka_robot_protection(driver, AUCHAN_URL)
+            encountered_auchan_robot_protection = True
         price = get_auchan_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
