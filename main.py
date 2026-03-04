@@ -228,7 +228,12 @@ if __name__ == "__main__":
     driver = get_driver()
     driver.delete_all_cookies()
     time.sleep(2)
+    encountered_lenta_robot_protection = False
     for name, url in LENTA_PRODUCT_LIST_DICT.items():
+        if not encountered_lenta_robot_protection:
+            defeat_perekrestok_pyaterochka_robot_protection(driver, "https://lenta.com")
+            encountered_lenta_robot_protection = True
+            time.sleep(3)
         price = get_lenta_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
@@ -277,7 +282,7 @@ if __name__ == "__main__":
         if encountered_pyaterochka_robot_protection < 1:
             defeat_perekrestok_pyaterochka_robot_protection(driver, PYATEROCHKA_URL)
             encountered_pyaterochka_robot_protection += 1
-            time.sleep(3)
+            time.sleep(5)
         price = get_pyaterochka_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
         last_price_series = df.loc[df['Product URL'] == url, last_col]
