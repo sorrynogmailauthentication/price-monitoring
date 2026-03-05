@@ -11,28 +11,28 @@ import psycopg2
 from categories import *
 from dotenv import load_dotenv
 import csv
-
-
+import re
 
 load_dotenv()
 
-CARD_CONTAINER = "div[data-testid='productCard-container']"
-LENTA_CARD_CONTAINER = "div[class='lu-grid']"
-NAME_CLASS = "styles_productCardContentPanel_name__gtZfG"
-PRICE_CLASS = "styles_price__U1y_f"
-DISCOUNT_CLASS = "styles_price__oldPrice__VsVTT"
-PAGINATION_ITEM_CLASS = "styles_paginationItem__eSg3p"
-AUCHAN_PRICE_REGEX = r'\d+\,\d{2}'
-AUCHAN_PRICE_ELEMENT = 'styles_price'
-AUCHAN_URL = "https://www.auchan.ru/"
-LENTA_URL = "https://lenta.com/"
-CATEGORY_PAGES_ELEMENT = "styles_paginationItem__eSg3p"
-CATEGORIES_SECTION_ELEMENT = "styles_youMayNeed___gUus"
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-
-
 CHROMIUM_VERSION = 145
+
+LENTA_PAGINATION_ELEMENT = "pagination-nav__list"
+LENTA_PRICE_ELEMENT = "main-price"
+LENTA_ARTICLE_REGEX = re.compile(r"product-(\d+)-favorite")
+LENTA_CARD_CONTAINER = "div[class='lu-grid']"
+LENTA_URL = "https://lenta.com/"
+
+AUCHAN_KEY_ELEMENT = "styles_productCard__xH9l_"
+AUCHAN_PAGINATION_ELEMENT = "styles_pagination__TCaLO"
+AUCHAN_ITEM_CARD_CONTAINER = "div[data-testid='productCard-container']"
+AUCHAN_ITEM_CARD_NAME_CLASS = "styles_productCardContentPanel_name__gtZfG"
+AUCHAN_ITEM_CARD_PRICE_CLASS = "styles_price__U1y_f"
+AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "styles_price__oldPrice__VsVTT"
+AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardContentPanel_link"
+AUCHAN_URL = "https://www.auchan.ru/"
 
 def get_driver():
     options = uc.ChromeOptions()
@@ -40,6 +40,12 @@ def get_driver():
     options.add_experimental_option("prefs", prefs)
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
+
+def wait_for_element(driver, class_name: str):
+    try:
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
+    except TimeoutException:
+        pass
 
 def get_auchan_category_list() -> list:
     driver.get(AUCHAN_URL)
@@ -56,13 +62,10 @@ def get_auchan_category_list() -> list:
 
 def lenta_parse_category(url: str) -> str:
     driver.get(url)
-    try:
-        WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, "main-price")))
-    except TimeoutException:
-        pass
+    wait_for_element(driver, LENTA_PRICE_ELEMENT)
     html = driver.page_source
     soup = BeautifulSoup(html, "html.parser")
-    pages = soup.find_all("ul", class_="pagination-nav__list")
+    pages = soup.find_all("ul", class_=LENTA_PAGINATION_ELEMENT)
     last_page = 1
     if pages:
         for page in pages:
@@ -76,11 +79,7 @@ def lenta_parse_category(url: str) -> str:
     for page in range(2, last_page + 1):
         url = f"{base_url}/page/{page}/" 
         driver.get(url)
-        try:
-            WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, "main-price")))
-        except TimeoutException:
-            continue
-        time.sleep(0.5)
+        wait_for_element(driver, LENTA_PRICE_ELEMENT)
         html = driver.page_source
         page_blocks = lenta_parse_category_page(html)
         if page_blocks:
@@ -105,27 +104,26 @@ def lenta_parse_category_page(html: str) -> str:
         price_el = card.find("span", class_="main-price")
         price_text = price_el.get_text(strip=True).replace("₽", "").replace("\xa0", "") if price_el else None
         discount_el = card.find("span", class_="discount-badge")
+        article_el = card.find("button", class_="product-card-favorite-btn")
+        raw_id = article_el.get("id", "")
+        article_match = LENTA_ARTICLE_REGEX.search(raw_id)
+        article = article_match.group(1).zfill(6) if article_match else None
         if discount_el:
             old_price_el = card.find("div", class_="old-price")
             old_price_text = old_price_el.get_text(strip=True).replace("₽", "").replace("\xa0", "").split("-")[0] if old_price_el else None
         else:
             old_price_text = None
-        page_blocks[link] = [name_text, price_text, old_price_text]
+        page_blocks[link] = [name_text, price_text, old_price_text, article]
     return page_blocks
 
 def auchan_parse_category(url: str) -> str:
     driver.get(url)
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-    time.sleep(1)
+    wait_for_element(driver, AUCHAN_KEY_ELEMENT)
     html = driver.page_source
     soup = BeautifulSoup(html, "html.parser")
-    pages = soup.find_all(class_=lambda c: c and CATEGORY_PAGES_ELEMENT in " ".join(c) if isinstance(c, list) else CATEGORY_PAGES_ELEMENT in str(c))
-    last_page = 1
-    if pages:
-        for page in pages:
-            value = page.get_text(strip=True)
-            if value and int(value) > last_page:
-                last_page = int(value)
+    pages = soup.find("ul", class_=AUCHAN_PAGINATION_ELEMENT)
+    pages_text = pages.get_text(strip=True, separator=",").split(",")[-1] if pages else None
+    last_page = int(pages_text) if pages_text else 1
     blocks = {}
     page_blocks = auchan_parse_category_page(html)
     if page_blocks:
@@ -133,11 +131,7 @@ def auchan_parse_category(url: str) -> str:
     for page in range(2, last_page + 1):
         url = f"{url}?page={page}"
         driver.get(url)
-        try:
-            WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-        except TimeoutException:
-            continue
-        time.sleep(0.5)
+        wait_for_element(driver, AUCHAN_KEY_ELEMENT)
         html = driver.page_source
         page_blocks = auchan_parse_category_page(html)
         url = url.split("?")[0]
@@ -150,21 +144,22 @@ def auchan_parse_category(url: str) -> str:
 def auchan_parse_category_page(html: str) -> str:
     page_blocks = {}
     soup = BeautifulSoup(html, "html.parser")
-    cards = soup.select(CARD_CONTAINER)
+    cards = soup.select(AUCHAN_ITEM_CARD_CONTAINER)
     for card in cards:
-        name_el = card.find(class_=lambda c: c and NAME_CLASS in " ".join(c) if isinstance(c, list) else NAME_CLASS in str(c))
+        name_el = card.find(class_=AUCHAN_ITEM_CARD_NAME_CLASS)
         name_text = name_el.get_text(strip=True) if name_el else ""
-        link_el = card.find("a", class_=lambda c: c and "styles_productCardContentPanel_link" in " ".join(c) if isinstance(c, list) else "styles_productCardContentPanel_link" in str(c))
-        if not link_el:
-            link_el = card.find("a", href=lambda h: h and "/product/" in h)
+        link_el = card.find("a", class_=AUCHAN_ITEM_CARD_LINK_CLASS)
         link = link_el.get("href", "") if link_el else ""
+        if not link:
+            continue
         if link and not link.startswith("http"):
             link = AUCHAN_URL + link.split("?")[0]
-        price_el = card.find(class_=lambda c: c and PRICE_CLASS in " ".join(c) and "oldPrice" not in " ".join(c) if isinstance(c, list) else PRICE_CLASS in str(c) and "oldPrice" not in str(c))
+        price_el = card.find(class_=AUCHAN_ITEM_CARD_PRICE_CLASS)
         price_text = price_el.get_text(strip=True).replace("₽", "") if price_el else None
-        discount_el = card.find(class_=lambda c: c and DISCOUNT_CLASS in " ".join(c) if isinstance(c, list) else DISCOUNT_CLASS in str(c))
+        discount_el = card.find(class_=AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
         discount_text = discount_el.get_text(strip=True) if discount_el else None
-        page_blocks[link] = [name_text, price_text, discount_text]
+        article = None
+        page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
 
 def _parse_price(price_text):
@@ -180,18 +175,19 @@ def _parse_price(price_text):
 def update_or_append_products_sql(conn, blocks: dict, today: str, shop: str, cat_label: str) -> None:
     """Upsert products and today's prices into PostgreSQL."""
     with conn.cursor() as cur:
-        for url, (name, price_text, discount_text) in blocks.items():
+        for url, (name, price_text, discount_text, article) in blocks.items():
             # Upsert product
             cur.execute(
                 """
-                INSERT INTO products (url, product_name, shop, category)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO products (url, product_name, shop, category, article)
+                VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (url) DO UPDATE SET
                     product_name = EXCLUDED.product_name,
                     shop = EXCLUDED.shop,
-                    category = EXCLUDED.category
+                    category = EXCLUDED.category,
+                    article = COALESCE(EXCLUDED.article, products.article)
                 """,
-                (url, name or None, shop, cat_label),
+                (url, name or None, shop, cat_label, article),
             )
             # Upsert price for today
             price_num = _parse_price(price_text)
@@ -207,19 +203,23 @@ def update_or_append_products_sql(conn, blocks: dict, today: str, shop: str, cat
             )
     conn.commit()
 
+def test_write_to_csv(blocks: dict):
+    with open("lenta_test.csv", "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["URL", "Product Name", "Price", "Discount", "Article"])
+        for url, (name, price, discount, article) in blocks.items():
+            writer.writerow([url, name, price, discount, article])
+
 
 if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver()
     driver.delete_all_cookies()
     time.sleep(1)
-    blocks = lenta_parse_category("https://lenta.com/catalog/ovoshchi-frukty-144/")
+    # blocks = lenta_parse_category("https://lenta.com/catalog/ovoshchi-frukty-144/")
+    blocks = auchan_parse_category("https://www.auchan.ru/catalog/ptica-myaso/")
     if blocks:
-        with open("lenta_test.csv", "w", newline="", encoding="utf-8-sig") as f:
-            writer = csv.writer(f)
-            writer.writerow(["URL", "Product Name", "Price", "Discount"])
-            for url, (name, price, discount) in blocks.items():
-                writer.writerow([url, name, price, discount])
+        test_write_to_csv(blocks)
     driver.quit()
     # conn = psycopg2.connect(DATABASE_URL)
     # try:
