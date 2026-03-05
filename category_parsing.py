@@ -106,7 +106,7 @@ def ensure_excel_columns(df: pd.DataFrame, today: str) -> pd.DataFrame:
         df[disc_col] = None
     return df
 
-def update_or_append_products(df: pd.DataFrame, blocks: dict, today: str) -> pd.DataFrame:
+def update_or_append_products(df: pd.DataFrame, blocks: dict, today: str, category: str) -> pd.DataFrame:
     price_col = f"{today} price"
     disc_col = f"{today} discounted"
     df = ensure_excel_columns(df, today)
@@ -115,8 +115,11 @@ def update_or_append_products(df: pd.DataFrame, blocks: dict, today: str) -> pd.
         if mask.any():
             df.loc[mask, price_col] = price
             df.loc[mask, disc_col] = discount
+            df.loc[mask, "shop"] = AUCHAN_FOOD_CATEGORIES_DICT[category][0]
+            df.loc[mask, "category"] = AUCHAN_FOOD_CATEGORIES_DICT[category][1]
         else:
-            new_row = {"url": url, "Product name": name, price_col: price, disc_col: discount}
+            new_row = {"url": url, "Product name": name, price_col: price, disc_col: discount, "shop": AUCHAN_FOOD_CATEGORIES_DICT[category][0]
+            , "category": AUCHAN_FOOD_CATEGORIES_DICT[category][1]}
             for c in df.columns:
                 if c not in new_row:
                     new_row[c] = None
@@ -129,9 +132,9 @@ if __name__ == "__main__":
     driver = get_driver()
     driver.delete_all_cookies()
     time.sleep(1)
-    for category in AUCHAN_FOOD_CATEGORIES:
+    for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
         blocks = auchan_parse_category(category)
         if blocks:
-            df = update_or_append_products(df, blocks, today)
+            df = update_or_append_products(df, blocks, today, category)
     df.to_excel(EXCEL_PATH, index=False, engine="openpyxl")
     driver.quit()
