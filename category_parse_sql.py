@@ -31,7 +31,7 @@ AUCHAN_ITEM_CARD_CONTAINER = "div[data-testid='productCard-container']"
 AUCHAN_ITEM_CARD_NAME_CLASS = "styles_productCardContentPanel_name__gtZfG"
 AUCHAN_ITEM_CARD_PRICE_CLASS = "styles_price__U1y_f"
 AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "styles_price__oldPrice__VsVTT"
-AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardContentPanel_link"
+AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardPicturePanel__sR0Mr"
 AUCHAN_URL = "https://www.auchan.ru/"
 
 def get_driver():
@@ -63,6 +63,7 @@ def get_auchan_category_list() -> list:
 def lenta_parse_category(url: str) -> str:
     driver.get(url)
     wait_for_element(driver, LENTA_PRICE_ELEMENT)
+    time.sleep(0.5)
     html = driver.page_source
     soup = BeautifulSoup(html, "html.parser")
     pages = soup.find_all("ul", class_=LENTA_PAGINATION_ELEMENT)
@@ -80,6 +81,7 @@ def lenta_parse_category(url: str) -> str:
         url = f"{base_url}/page/{page}/" 
         driver.get(url)
         wait_for_element(driver, LENTA_PRICE_ELEMENT)
+        time.sleep(0.5)
         html = driver.page_source
         page_blocks = lenta_parse_category_page(html)
         if page_blocks:
@@ -94,6 +96,7 @@ def lenta_parse_category_page(html: str) -> str:
     card_container = soup.select(LENTA_CARD_CONTAINER)
     cards = card_container[0].find_all("div", class_="lu-grid__item")
     for card in cards:
+        article = None
         name_el = card.find("span", class_="card-name_content")
         name_appendix_el = card.find("p", class_="card-name_package")
         name_text = name_el.get_text(strip=True) if name_el else ""
@@ -105,9 +108,10 @@ def lenta_parse_category_page(html: str) -> str:
         price_text = price_el.get_text(strip=True).replace("₽", "").replace("\xa0", "") if price_el else None
         discount_el = card.find("span", class_="discount-badge")
         article_el = card.find("button", class_="product-card-favorite-btn")
-        raw_id = article_el.get("id", "")
-        article_match = LENTA_ARTICLE_REGEX.search(raw_id)
-        article = article_match.group(1).zfill(6) if article_match else None
+        raw_id = article_el.get("id", "") if article_el else None
+        if raw_id:
+            article_match = LENTA_ARTICLE_REGEX.search(raw_id)
+            article = str(article_match.group(1)).zfill(6) if article_match else None
         if discount_el:
             old_price_el = card.find("div", class_="old-price")
             old_price_text = old_price_el.get_text(strip=True).replace("₽", "").replace("\xa0", "").split("-")[0] if old_price_el else None
@@ -203,8 +207,8 @@ def update_or_append_products_sql(conn, blocks: dict, today: str, shop: str, cat
             )
     conn.commit()
 
-def test_write_to_csv(blocks: dict):
-    with open("lenta_test.csv", "w", newline="", encoding="utf-8-sig") as f:
+def test_write_to_csv(blocks: dict, filename: str):
+    with open(filename, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.writer(f)
         writer.writerow(["URL", "Product Name", "Price", "Discount", "Article"])
         for url, (name, price, discount, article) in blocks.items():
@@ -216,11 +220,26 @@ if __name__ == "__main__":
     driver = get_driver()
     driver.delete_all_cookies()
     time.sleep(1)
+    # test block
     # blocks = lenta_parse_category("https://lenta.com/catalog/ovoshchi-frukty-144/")
-    blocks = auchan_parse_category("https://www.auchan.ru/catalog/ptica-myaso/")
-    if blocks:
-        test_write_to_csv(blocks)
+    # blocks = auchan_parse_category("https://www.auchan.ru/catalog/ptica-myaso/")
+    # if blocks:
+    #     test_write_to_csv(blocks)
+    # lenta_blocks = {}
+    # for category in LENTA_FOOD_CATEGORIES_DICT.keys():
+    #     blocks = lenta_parse_category(category)
+    #     if blocks:
+    #         lenta_blocks.update(blocks)
+    # test_write_to_csv(lenta_blocks, "lenta_test.csv")
+    auchan_blocks = {}
+    for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+        blocks = auchan_parse_category(category)
+        if blocks:
+            auchan_blocks.update(blocks)
+    test_write_to_csv(auchan_blocks, "aucha_test.csv")
+
     driver.quit()
+    # main block
     # conn = psycopg2.connect(DATABASE_URL)
     # try:
     #     shop = "Ашан"
