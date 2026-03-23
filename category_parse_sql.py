@@ -32,7 +32,7 @@ AUCHAN_ITEM_CARD_NAME_CLASS = "styles_productCardContentPanel_name__gtZfG"
 AUCHAN_ITEM_CARD_PRICE_CLASS = "styles_price__U1y_f"
 AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "styles_price__oldPrice__VsVTT"
 AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardPicturePanel__sR0Mr"
-AUCHAN_URL = "https://www.auchan.ru/"
+AUCHAN_URL = "https://www.auchan.ru"
 
 def get_driver():
     options = uc.ChromeOptions()
@@ -105,7 +105,7 @@ def lenta_parse_category_page(html: str) -> str:
         link_el = card.find("a", class_="product-card")
         link = link_el.get("href", "") if link_el else ""
         price_el = card.find("span", class_="main-price")
-        price_text = price_el.get_text(strip=True).replace("₽", "").replace("\xa0", "") if price_el else None
+        price_text = price_el.get_text(strip=True).replace("₽", "").replace(",", ".").replace("\xa0", "") if price_el else None
         discount_el = card.find("span", class_="discount-badge")
         article_el = card.find("button", class_="product-card-favorite-btn")
         raw_id = article_el.get("id", "") if article_el else None
@@ -114,7 +114,7 @@ def lenta_parse_category_page(html: str) -> str:
             article = str(article_match.group(1)).zfill(6) if article_match else None
         if discount_el:
             old_price_el = card.find("div", class_="old-price")
-            old_price_text = old_price_el.get_text(strip=True).replace("₽", "").replace("\xa0", "").split("-")[0] if old_price_el else None
+            old_price_text = old_price_el.get_text(strip=True).replace("₽", "").replace(",", ".").replace("\xa0", "").split("-")[0] if old_price_el else None
         else:
             old_price_text = None
         page_blocks[link] = [name_text, price_text, old_price_text, article]
@@ -159,9 +159,9 @@ def auchan_parse_category_page(html: str) -> str:
         if link and not link.startswith("http"):
             link = AUCHAN_URL + link.split("?")[0]
         price_el = card.find(class_=AUCHAN_ITEM_CARD_PRICE_CLASS)
-        price_text = price_el.get_text(strip=True).replace("₽", "") if price_el else None
+        price_text = price_el.get_text(strip=True).replace("₽", "").replace(",", ".") if price_el else None
         discount_el = card.find(class_=AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
-        discount_text = discount_el.get_text(strip=True) if discount_el else None
+        discount_text = discount_el.get_text(strip=True).replace("₽", "").replace(",", ".") if discount_el else None
         article = None
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
@@ -231,24 +231,30 @@ if __name__ == "__main__":
     #     if blocks:
     #         lenta_blocks.update(blocks)
     # test_write_to_csv(lenta_blocks, "lenta_test.csv")
-    auchan_blocks = {}
-    for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
-        blocks = auchan_parse_category(category)
-        if blocks:
-            auchan_blocks.update(blocks)
-    test_write_to_csv(auchan_blocks, "aucha_test.csv")
+    # auchan_blocks = {}
+    # for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+    #     blocks = auchan_parse_category(category)
+    #     if blocks:
+    #         auchan_blocks.update(blocks)
+    # test_write_to_csv(auchan_blocks, "aucha_test.csv")
 
-    driver.quit()
+    # driver.quit()
     # main block
-    # conn = psycopg2.connect(DATABASE_URL)
-    # try:
-    #     shop = "Ашан"
-    #     for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
-    #         cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
-    #         blocks = auchan_parse_category(category)
-    #         if blocks:
-    #             update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-    # finally:
-    #     conn.close()
-    #     driver.quit()
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        shop = "Ашан"
+        for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+            cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
+            blocks = auchan_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Лента"
+        for category in LENTA_FOOD_CATEGORIES_DICT.keys():
+            cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
+            blocks = lenta_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+    finally:
+        conn.close()
+        driver.quit()
 
