@@ -240,6 +240,10 @@ def update_or_append_products_sql(conn, blocks: dict, today: str, shop: str, cat
     """Upsert products and today's prices into PostgreSQL."""
     with conn.cursor() as cur:
         for url, (name, price_text, discount_text, article) in blocks.items():
+            # Normalize missing identifiers to NULL (important for unique constraints).
+            if article == "":
+                article = None
+
             # Canonical identity:
             # - prefer (shop, article) when article exists
             # - otherwise fall back to `url` lookup

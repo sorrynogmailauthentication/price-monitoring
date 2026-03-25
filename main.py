@@ -261,21 +261,22 @@ if __name__ == "__main__":
     today_index = df.columns.get_loc(today)
     last_col = df.columns[today_index - 1]
     driver = get_driver()
-    time.sleep(2)
-    # for i in range(3):
-    #         defeat_perekrestok_pyaterochka_robot_protection(driver, PYATEROCHKA_URL)
-    #         time.sleep(3)
-    # for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():
-    #     price = get_pyaterochka_price(url, driver)
-    #     df.loc[df['Product URL'] == url, today] = price
-    #     last_price_series = df.loc[df['Product URL'] == url, last_col]
-    #     last_price = last_price_series.values[0]
-    #     if str(last_price) != str(price) and type(price) == float:
-    #         save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
-    #     time.sleep(0.5)
-    # time.sleep(2)
-    for i in range(3):
+    time.sleep(1)
+    for i in range(2):
+        defeat_perekrestok_pyaterochka_robot_protection(driver, PYATEROCHKA_URL)
+        time.sleep(1)
+    for i in range(2):
         defeat_perekrestok_pyaterochka_robot_protection(driver, PEREKRESTOK_URL)
+        time.sleep(1)
+    for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():
+        price = get_pyaterochka_price(url, driver)
+        df.loc[df['Product URL'] == url, today] = price
+        last_price_series = df.loc[df['Product URL'] == url, last_col]
+        last_price = last_price_series.values[0]
+        if str(last_price) != str(price) and type(price) == float:
+            save_page_as_screenshot(driver, f"PYATEROCHKA_{name}", directory)
+        time.sleep(0.5)
+    time.sleep(2)
     for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
         price = get_perekrestok_price(url, driver)
         if "Forbidden" in driver.page_source:
@@ -287,52 +288,52 @@ if __name__ == "__main__":
             save_page_as_screenshot(driver, f"PEREKRESTOK_{name}", directory)
         time.sleep(0.5)
     time.sleep(1)
-    # encountered_lenta_robot_protection = False
-    # for name, url in LENTA_PRODUCT_LIST_DICT.items():
-    #     if not encountered_lenta_robot_protection:
-    #         defeat_perekrestok_pyaterochka_robot_protection(driver, "https://lenta.com")
-    #         encountered_lenta_robot_protection = True
-    #         time.sleep(3)
-    #     price = get_lenta_price(url, driver)
-    #     df.loc[df['Product URL'] == url, today] = price
-    #     last_price_series = df.loc[df['Product URL'] == url, last_col]
-    #     last_price = last_price_series.values[0]
-    #     if str(last_price) != str(price) and type(price) == float:
-    #         save_page_as_screenshot(driver, f"LENTA_{name}", directory)
-    #     if url == "https://lenta.com/product/makarony-spirali-gra-vs-rossiya-450g-117806/":
-    #         time.sleep(1)
-    #     time.sleep(0.5)
-    # time.sleep(1)
-    # for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
-    #     price = get_vkusvil_price(url, driver)
-    #     df.loc[df['Product URL'] == url, today] = price
-    #     last_price_series = df.loc[df['Product URL'] == url, last_col]
-    #     last_price = last_price_series.values[0]
-    #     if str(last_price) != str(price):
-    #         save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
-    #     time.sleep(0.5)
-    # time.sleep(1)
-    # for name, url in DIXY_PRODUCT_LIST_DICT.items():
-    #     price = get_dixy_price(url, driver)
-    #     df.loc[df['Product URL'] == url, today] = price
-    #     last_price_series = df.loc[df['Product URL'] == url, last_col]
-    #     last_price = last_price_series.values[0]
-    #     if str(last_price) != str(price) and type(price) == float:
-    #         save_page_as_screenshot(driver, f"DIXY_{name}", directory)
-    #     time.sleep(0.5)
-    # time.sleep(1)
-    # encountered_auchan_robot_protection = False
-    # for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
-    #     if not encountered_auchan_robot_protection:
-    #         defeat_perekrestok_pyaterochka_robot_protection(driver, AUCHAN_URL)
-    #         encountered_auchan_robot_protection = True
-    #     price = get_auchan_price(url, driver)
-    #     df.loc[df['Product URL'] == url, today] = price
-    #     last_price_series = df.loc[df['Product URL'] == url, last_col]
-    #     last_price = last_price_series.values[0]
-    #     if str(last_price) != str(price) and type(price) == float:
-    #         save_page_as_screenshot(driver, f"AUCHAN_{name}", directory)
-    #     time.sleep(0.5)
+    encountered_lenta_robot_protection = False
+    for name, url in LENTA_PRODUCT_LIST_DICT.items():
+        if not encountered_lenta_robot_protection:
+            defeat_perekrestok_pyaterochka_robot_protection(driver, "https://lenta.com")
+            encountered_lenta_robot_protection = True
+            time.sleep(3)
+        price = get_lenta_price(url, driver)
+        df.loc[df['Product URL'] == url, today] = price
+        last_price_series = df.loc[df['Product URL'] == url, last_col]
+        last_price = last_price_series.values[0]
+        if str(last_price) != str(price) and type(price) == float:
+            save_page_as_screenshot(driver, f"LENTA_{name}", directory)
+        if url == "https://lenta.com/product/makarony-spirali-gra-vs-rossiya-450g-117806/":
+            time.sleep(1)
+        time.sleep(0.5)
+    time.sleep(1)
+    for name, url in VKUSVIL_PRODUCT_LIST_DICT.items():
+        price = get_vkusvil_price(url, driver)
+        df.loc[df['Product URL'] == url, today] = price
+        last_price_series = df.loc[df['Product URL'] == url, last_col]
+        last_price = last_price_series.values[0]
+        if str(last_price) != str(price):
+            save_page_as_screenshot(driver, f"VKUSVIL_{name}", directory)
+        time.sleep(0.5)
+    time.sleep(1)
+    for name, url in DIXY_PRODUCT_LIST_DICT.items():
+        price = get_dixy_price(url, driver)
+        df.loc[df['Product URL'] == url, today] = price
+        last_price_series = df.loc[df['Product URL'] == url, last_col]
+        last_price = last_price_series.values[0]
+        if str(last_price) != str(price) and type(price) == float:
+            save_page_as_screenshot(driver, f"DIXY_{name}", directory)
+        time.sleep(0.5)
+    time.sleep(1)
+    encountered_auchan_robot_protection = False
+    for name, url in AUCHAN_PRODUCT_LIST_DICT.items():
+        if not encountered_auchan_robot_protection:
+            defeat_perekrestok_pyaterochka_robot_protection(driver, AUCHAN_URL)
+            encountered_auchan_robot_protection = True
+        price = get_auchan_price(url, driver)
+        df.loc[df['Product URL'] == url, today] = price
+        last_price_series = df.loc[df['Product URL'] == url, last_col]
+        last_price = last_price_series.values[0]
+        if str(last_price) != str(price) and type(price) == float:
+            save_page_as_screenshot(driver, f"AUCHAN_{name}", directory)
+        time.sleep(0.5)
     df.to_csv(filename, index=False, encoding='utf-8-sig')
     if os.path.exists(directory) and os.path.isdir(directory):
         if not os.listdir(directory):
