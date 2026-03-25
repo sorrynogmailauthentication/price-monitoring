@@ -12,6 +12,7 @@ from categories import *
 from dotenv import load_dotenv
 import csv
 import re
+import uuid
 
 load_dotenv()
 
@@ -33,11 +34,21 @@ AUCHAN_ITEM_CARD_PRICE_CLASS = "styles_price__U1y_f"
 AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "styles_price__oldPrice__VsVTT"
 AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardPicturePanel__sR0Mr"
 AUCHAN_URL = "https://www.auchan.ru"
+AUCHAN_ARTICLE_REGEX = re.compile(r'_(\d+?)_')
+
+DIXY_KEY_ELEMENT = "listing__wrapper"
+DIXY_PAGINATION_ELEMENT = "listing-pagination"
+DIXY_ITEM_CARD_CONTAINER = "card"
+DIXY_ITEM_CARD_NAME_CLASS = "card__title"
+DIXY_ITEM_CARD_PRICE_CLASS = "card__price-num"
+DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "card__price-crossed"
+DIXY_ITEM_CARD_LINK_CLASS = "card__link"
+DIXY_URL = "dixy.ru"
 
 def get_driver():
     options = uc.ChromeOptions()
-    prefs = {"profile.managed_default_content_settings.images": 2}  # 2 = do not load images
-    options.add_experimental_option("prefs", prefs)
+    # prefs = {"profile.managed_default_content_settings.images": 2}
+    # options.add_experimental_option("prefs", prefs)
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
@@ -150,6 +161,10 @@ def auchan_parse_category_page(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
     cards = soup.select(AUCHAN_ITEM_CARD_CONTAINER)
     for card in cards:
+        article_el = card.find("img")
+        article_html = article_el.get("src", "") if article_el else None
+        article_match = AUCHAN_ARTICLE_REGEX.search(article_html)
+        article = str(article_match.group(1)).zfill(6) if article_match else None
         name_el = card.find(class_=AUCHAN_ITEM_CARD_NAME_CLASS)
         name_text = name_el.get_text(strip=True) if name_el else ""
         link_el = card.find("a", class_=AUCHAN_ITEM_CARD_LINK_CLASS)
@@ -162,7 +177,52 @@ def auchan_parse_category_page(html: str) -> str:
         price_text = price_el.get_text(strip=True).replace("₽", "").replace(",", ".") if price_el else None
         discount_el = card.find(class_=AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
         discount_text = discount_el.get_text(strip=True).replace("₽", "").replace(",", ".") if discount_el else None
-        article = None
+        page_blocks[link] = [name_text, price_text, discount_text, article]
+    return page_blocks
+
+def dixy_parse_category(url: str) -> str:
+    driver.get(url)
+    page_links = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+    html = driver.page_source
+    pages_list = [el.text for el in page_links]
+    last_page = int(pages_list[-1]) if pages_list else 1
+    blocks = {}
+    page_blocks = dixy_parse_category_page(html)
+    if page_blocks:
+        blocks.update(page_blocks)
+    for page in range(2, last_page + 1):
+        url = f"{url}?page={page}"
+        print(url)
+        driver.get(url)
+        WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+        html = driver.page_source
+        page_blocks = dixy_parse_category_page(html)
+        url = url.split("?")[0]
+        if page_blocks:
+            blocks.update(page_blocks)
+        else:
+            break
+        time.sleep(1)
+    return blocks
+
+def dixy_parse_category_page(html: str) -> str:
+    page_blocks = {}
+    soup = BeautifulSoup(html, "html.parser")
+    cards = soup.find_all("article", class_=DIXY_ITEM_CARD_CONTAINER)
+    for card in cards:
+        article = card.get("product-id", "") if card else None
+        name_el = card.find(class_=DIXY_ITEM_CARD_NAME_CLASS)
+        name_text = name_el.get_text(strip=True) if name_el else ""
+        link_el = card.find("a", class_=DIXY_ITEM_CARD_LINK_CLASS)
+        link = link_el.get("href", "") if link_el else ""
+        if not link:
+            continue
+        if link and not link.startswith("http"):
+            link = DIXY_URL + link.split("?")[0]
+        price_el = card.find(class_=DIXY_ITEM_CARD_PRICE_CLASS)
+        price_text = price_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if price_el else None
+        discount_el = card.find(class_=DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
+        discount_text = discount_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if discount_el else None
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
 
@@ -180,30 +240,45 @@ def update_or_append_products_sql(conn, blocks: dict, today: str, shop: str, cat
     """Upsert products and today's prices into PostgreSQL."""
     with conn.cursor() as cur:
         for url, (name, price_text, discount_text, article) in blocks.items():
-            # Upsert product
-            cur.execute(
-                """
-                INSERT INTO products (url, product_name, shop, category, article)
-                VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (url) DO UPDATE SET
-                    product_name = EXCLUDED.product_name,
-                    shop = EXCLUDED.shop,
-                    category = EXCLUDED.category,
-                    article = COALESCE(EXCLUDED.article, products.article)
-                """,
-                (url, name or None, shop, cat_label, article),
-            )
+            # Canonical identity:
+            # - prefer (shop, article) when article exists
+            # - otherwise fall back to `url` lookup
+            product_id = None
+
+            if article:
+                cur.execute("SELECT product_id FROM products WHERE shop = %s AND article = %s LIMIT 1", (shop, article))
+                row = cur.fetchone()
+                if row:
+                    product_id = row[0]
+
+            if product_id is None:
+                cur.execute("SELECT product_id FROM products WHERE url = %s LIMIT 1", (url,))
+                row = cur.fetchone()
+                if row:
+                    product_id = row[0]
+
+            if product_id is None:
+                # Generate UUID in code (not in DB)
+                product_id = uuid.uuid4()
+                cur.execute(
+                    "INSERT INTO products (product_id, url, product_name, shop, category, article) VALUES (%s, %s, %s, %s, %s, %s)",
+                    (product_id, url, name or None, shop, cat_label, article),
+                )
+            else:
+                # Update product attributes; keep canonical (shop, article) identity.
+                cur.execute("""
+                UPDATE products SET url = %s, product_name = %s, shop = %s, category = %s, article = COALESCE(products.article, %s) 
+                WHERE product_id = %s""",
+                    (url, name or None, shop, cat_label, article, product_id),
+                )
             # Upsert price for today
             price_num = _parse_price(price_text)
             cur.execute(
                 """
-                INSERT INTO prices (product_url, date, price, discount)
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (product_url, date) DO UPDATE SET
-                    price = EXCLUDED.price,
-                    discount = EXCLUDED.discount
+                INSERT INTO prices (product_id, date, price, discount) VALUES (%s, %s, %s, %s)
+                ON CONFLICT (product_id, date) DO UPDATE SET price = EXCLUDED.price, discount = EXCLUDED.discount
                 """,
-                (url, today, price_num, discount_text),
+                (product_id, today, price_num, discount_text),
             )
     conn.commit()
 
@@ -223,6 +298,7 @@ if __name__ == "__main__":
     # test block
     # blocks = lenta_parse_category("https://lenta.com/catalog/ovoshchi-frukty-144/")
     # blocks = auchan_parse_category("https://www.auchan.ru/catalog/ptica-myaso/")
+    # blocks = dixy_parse_category("https://dixy.ru/catalog/ovoshchi-frukty/")
     # if blocks:
     #     test_write_to_csv(blocks)
     # lenta_blocks = {}
@@ -237,8 +313,14 @@ if __name__ == "__main__":
     #     if blocks:
     #         auchan_blocks.update(blocks)
     # test_write_to_csv(auchan_blocks, "aucha_test.csv")
-
-    # driver.quit()
+    dixy_blocks = {}
+    for category in DIXY_FOOD_CATEGORIES_DICT.keys():
+        blocks = dixy_parse_category(category)
+        if blocks:
+            dixy_blocks.update(blocks)
+    test_write_to_csv(dixy_blocks, "dixy_test.csv")
+    driver.quit()
+    exit()
     # main block
     conn = psycopg2.connect(DATABASE_URL)
     try:
@@ -252,6 +334,12 @@ if __name__ == "__main__":
         for category in LENTA_FOOD_CATEGORIES_DICT.keys():
             cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
             blocks = lenta_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Дикси"
+        for category in DIXY_FOOD_CATEGORIES_DICT.keys():
+            cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
+            blocks = dixy_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

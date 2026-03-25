@@ -143,3 +143,50 @@ LENTA_FOOD_CATEGORIES_DICT = {
 'https://lenta.com/catalog/sneki-20195/': 'Снеки',
 'https://lenta.com/catalog/detskoe-pitanie-19327/': 'Детское питание'
 }
+
+DIXY_GOODS_CATEGORIES_DICT = {
+'https://dixy.ru/catalog/skidki-po-karte/': 'Скидки по карте', 
+'https://dixy.ru/catalog/ovoshchi-frukty/': 'Овощи, фрукты', 
+'https://dixy.ru/catalog/gotovaya-eda/': 'Готовая еда', 
+'https://dixy.ru/catalog/molochnye-produkty-yaytsa/': 'Молочные продукты, яйцо', 
+'https://dixy.ru/catalog/syry/': 'Сыры', 
+'https://dixy.ru/catalog/myaso-ptitsa/': 'Мясо, птица', 
+'https://dixy.ru/catalog/myasnaya-gastronomiya/': 'Мясная гастрономия', 
+'https://dixy.ru/catalog/khleb-i-vypechka/': 'Хлеб и выпечка', 
+'https://dixy.ru/catalog/ryba-moreprodukty-ikra/': 'Рыба, морепродукты, икра', 
+'https://dixy.ru/catalog/bakaleya/': 'Бакалея', 
+'https://dixy.ru/catalog/konservy/': 'Консервы', 
+'https://dixy.ru/catalog/zamorojennye-produkty/': 'Замороженные продукты', 
+'https://dixy.ru/catalog/sousy-spetsii/': 'Соусы, специи', 
+'https://dixy.ru/catalog/konditerskie-izdeliya-torty/': 'Кондитерские изделия, торты', 
+'https://dixy.ru/catalog/chipsy-orekhi-i-sneki/': 'Чипсы, орехи и снеки', 
+'https://dixy.ru/catalog/chay-kofe-kakao/': 'Чай, кофе, какао', 
+'https://dixy.ru/catalog/voda-soki-napitki/': 'Вода, соки, напитки', 
+'https://dixy.ru/catalog/dlya-zdorovogo-pitaniya/': 'Для здорового питания', 
+'https://dixy.ru/catalog/detskoe-pitanie/': 'Детское питание', 
+'https://dixy.ru/catalog/tovary-dlya-detey/': 'Товары для детей', 
+'https://dixy.ru/catalog/tovary-dlya-jivotnykh/': 'Товары для животных',
+'https://dixy.ru/catalog/bytovaya-khimiya/': 'Бытовая химия', 
+'https://dixy.ru/catalog/gigiena-i-kosmetika/': 'Гигиена и косметика', 
+'https://dixy.ru/catalog/tovary-dlya-doma-i-dachi/': 'Товары для дома и дачи', 
+'https://dixy.ru/catalog/alkogolnye-napitki/': 'Алкогольные напитки'
+}
+
+DIXY_FOOD_CATEGORIES_DICT = {
+'https://dixy.ru/catalog/ovoshchi-frukty/': 'Овощи, фрукты', 
+'https://dixy.ru/catalog/molochnye-produkty-yaytsa/': 'Молочные продукты, яйцо', 
+'https://dixy.ru/catalog/syry/': 'Сыры', 
+'https://dixy.ru/catalog/myaso-ptitsa/': 'Мясо, птица', 
+'https://dixy.ru/catalog/myasnaya-gastronomiya/': 'Мясная гастрономия', 
+'https://dixy.ru/catalog/khleb-i-vypechka/': 'Хлеб и выпечка', 
+'https://dixy.ru/catalog/ryba-moreprodukty-ikra/': 'Рыба, морепродукты, икра', 
+'https://dixy.ru/catalog/bakaleya/': 'Бакалея', 
+'https://dixy.ru/catalog/konservy/': 'Консервы', 
+'https://dixy.ru/catalog/zamorojennye-produkty/': 'Замороженные продукты', 
+'https://dixy.ru/catalog/sousy-spetsii/': 'Соусы, специи', 
+'https://dixy.ru/catalog/konditerskie-izdeliya-torty/': 'Кондитерские изделия, торты', 
+'https://dixy.ru/catalog/chipsy-orekhi-i-sneki/': 'Чипсы, орехи и снеки', 
+'https://dixy.ru/catalog/chay-kofe-kakao/': 'Чай, кофе, какао', 
+'https://dixy.ru/catalog/voda-soki-napitki/': 'Вода, соки, напитки', 
+'https://dixy.ru/catalog/detskoe-pitanie/': 'Детское питание', 
+}
