@@ -104,6 +104,7 @@ def lenta_parse_category(url: str) -> str:
 def lenta_parse_category_page(html: str) -> str:
     page_blocks = {}
     soup = BeautifulSoup(html, "html.parser")
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
     card_container = soup.select(LENTA_CARD_CONTAINER)
     cards = card_container[0].find_all("div", class_="lu-grid__item")
     for card in cards:
@@ -207,6 +208,7 @@ def dixy_parse_category(url: str) -> str:
 
 def dixy_parse_category_page(html: str) -> str:
     page_blocks = {}
+    time.sleep(1)
     soup = BeautifulSoup(html, "html.parser")
     cards = soup.find_all("article", class_=DIXY_ITEM_CARD_CONTAINER)
     for card in cards:
@@ -263,7 +265,7 @@ def update_or_append_products_sql(conn, blocks: dict, today: str, shop: str, cat
 
             if product_id is None:
                 # Generate UUID in code (not in DB)
-                product_id = uuid.uuid4()
+                product_id = str(uuid.uuid4())
                 cur.execute(
                     "INSERT INTO products (product_id, url, product_name, shop, category, article) VALUES (%s, %s, %s, %s, %s, %s)",
                     (product_id, url, name or None, shop, cat_label, article),
@@ -317,14 +319,14 @@ if __name__ == "__main__":
     #     if blocks:
     #         auchan_blocks.update(blocks)
     # test_write_to_csv(auchan_blocks, "aucha_test.csv")
-    dixy_blocks = {}
-    for category in DIXY_FOOD_CATEGORIES_DICT.keys():
-        blocks = dixy_parse_category(category)
-        if blocks:
-            dixy_blocks.update(blocks)
-    test_write_to_csv(dixy_blocks, "dixy_test.csv")
-    driver.quit()
-    exit()
+    # dixy_blocks = {}
+    # for category in DIXY_FOOD_CATEGORIES_DICT.keys():
+    #     blocks = dixy_parse_category(category)
+    #     if blocks:
+    #         dixy_blocks.update(blocks)
+    # test_write_to_csv(dixy_blocks, "dixy_test.csv")
+    # driver.quit()
+    # exit()
     # main block
     conn = psycopg2.connect(DATABASE_URL)
     try:
