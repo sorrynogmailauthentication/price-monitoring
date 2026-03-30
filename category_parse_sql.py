@@ -52,6 +52,13 @@ def get_driver():
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
+def get_driver_no_images():
+    options = uc.ChromeOptions()
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    options.add_experimental_option("prefs", prefs)
+    driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
+    return driver
+
 def wait_for_element(driver, class_name: str):
     try:
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
@@ -195,7 +202,10 @@ def dixy_parse_category(url: str) -> str:
         url = f"{url}?page={page}"
         print(url)
         driver.get(url)
-        WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+        try:
+            WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+        except TimeoutException:
+            continue
         html = driver.page_source
         page_blocks = dixy_parse_category_page(html)
         url = url.split("?")[0]
@@ -208,7 +218,6 @@ def dixy_parse_category(url: str) -> str:
 
 def dixy_parse_category_page(html: str) -> str:
     page_blocks = {}
-    time.sleep(1)
     soup = BeautifulSoup(html, "html.parser")
     cards = soup.find_all("article", class_=DIXY_ITEM_CARD_CONTAINER)
     for card in cards:
@@ -298,8 +307,7 @@ def test_write_to_csv(blocks: dict, filename: str):
 
 if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
-    driver = get_driver()
-    driver.delete_all_cookies()
+    driver = get_driver_no_images()
     time.sleep(1)
     # test block
     # blocks = lenta_parse_category("https://lenta.com/catalog/ovoshchi-frukty-144/")
@@ -343,7 +351,20 @@ if __name__ == "__main__":
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         shop = "Дикси"
-        for category in DIXY_FOOD_CATEGORIES_DICT.keys():
+        dixy_cats = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
+        for category in dixy_cats[:5]:
+            cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
+            blocks = dixy_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        time.sleep(100)
+        for category in dixy_cats[5:10]:
+            cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
+            blocks = dixy_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        time.sleep(100)
+        for category in dixy_cats[10:]:
             cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
             blocks = dixy_parse_category(category)
             if blocks:
