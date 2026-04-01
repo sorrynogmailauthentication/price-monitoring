@@ -54,6 +54,12 @@ def get_driver():
 
 def get_driver_no_images():
     options = uc.ChromeOptions()
+    options.add_argument('--start-maximized')
+    user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile"
+    if not os.path.exists(user_data_dir):
+        os.makedirs(user_data_dir)
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+    options.add_argument("--profile-directory=Default")
     prefs = {"profile.managed_default_content_settings.images": 2}
     options.add_experimental_option("prefs", prefs)
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
@@ -203,9 +209,10 @@ def dixy_parse_category(url: str) -> str:
         print(url)
         driver.get(url)
         try:
-            WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+            WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
         except TimeoutException:
-            continue
+            input("TimeoutException")
+            pass
         html = driver.page_source
         page_blocks = dixy_parse_category_page(html)
         url = url.split("?")[0]
