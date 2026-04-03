@@ -18,7 +18,7 @@ load_dotenv()
 
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-CHROMIUM_VERSION = 145
+CHROMIUM_VERSION = 146
 
 LENTA_PAGINATION_ELEMENT = "pagination-nav__list"
 LENTA_PRICE_ELEMENT = "main-price"
@@ -55,7 +55,7 @@ def get_driver():
 def get_driver_no_images():
     options = uc.ChromeOptions()
     options.add_argument('--start-maximized')
-    user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile"
+    user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile_1"
     if not os.path.exists(user_data_dir):
         os.makedirs(user_data_dir)
     options.add_argument(f"--user-data-dir={user_data_dir}")
@@ -66,10 +66,7 @@ def get_driver_no_images():
     return driver
 
 def wait_for_element(driver, class_name: str):
-    try:
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
-    except TimeoutException:
-        pass
+    WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
 
 def get_auchan_category_list() -> list:
     driver.get(AUCHAN_URL)
@@ -160,7 +157,10 @@ def auchan_parse_category(url: str) -> str:
     for page in range(2, last_page + 1):
         url = f"{url}?page={page}"
         driver.get(url)
-        wait_for_element(driver, AUCHAN_KEY_ELEMENT)
+        try:
+            wait_for_element(driver, AUCHAN_KEY_ELEMENT)
+        except TimeoutException:
+            continue
         html = driver.page_source
         page_blocks = auchan_parse_category_page(html)
         url = url.split("?")[0]
