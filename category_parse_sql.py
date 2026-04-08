@@ -66,7 +66,11 @@ def get_driver_no_images():
     return driver
 
 def wait_for_element(driver, class_name: str):
-    WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
+    try:
+        WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
+        return True
+    except TimeoutException:
+        return False
 
 def get_auchan_category_list() -> list:
     driver.get(AUCHAN_URL)
@@ -102,7 +106,7 @@ def lenta_parse_category(url: str) -> str:
         url = f"{base_url}/page/{page}/" 
         driver.get(url)
         wait_for_element(driver, LENTA_PRICE_ELEMENT)
-        time.sleep(0.5)
+        time.sleep(0.2)
         html = driver.page_source
         page_blocks = lenta_parse_category_page(html)
         if page_blocks:
@@ -157,13 +161,10 @@ def auchan_parse_category(url: str) -> str:
     for page in range(2, last_page + 1):
         url = f"{url}?page={page}"
         driver.get(url)
-        try:
-            wait_for_element(driver, AUCHAN_KEY_ELEMENT)
-        except TimeoutException:
-            continue
+        wait_for_element(driver, AUCHAN_KEY_ELEMENT)
+        url = url.split("?")[0]
         html = driver.page_source
         page_blocks = auchan_parse_category_page(html)
-        url = url.split("?")[0]
         if page_blocks:
             blocks.update(page_blocks)
         else:
@@ -220,7 +221,7 @@ def dixy_parse_category(url: str) -> str:
             blocks.update(page_blocks)
         else:
             break
-        time.sleep(1)
+        time.sleep(3)
     return blocks
 
 def dixy_parse_category_page(html: str) -> str:
@@ -337,13 +338,13 @@ if __name__ == "__main__":
             blocks = dixy_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        time.sleep(100)
+        time.sleep(300)
         for category in dixy_cats[5:10]:
             cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
             blocks = dixy_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        time.sleep(100)
+        time.sleep(300)
         for category in dixy_cats[10:]:
             cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
             blocks = dixy_parse_category(category)
