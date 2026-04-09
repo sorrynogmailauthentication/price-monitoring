@@ -44,6 +44,7 @@ DIXY_ITEM_CARD_PRICE_CLASS = "card__price-num"
 DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "card__price-crossed"
 DIXY_ITEM_CARD_LINK_CLASS = "card__link"
 DIXY_URL = "dixy.ru"
+CHIZHIK_URL = "https://chizhik.club"
 
 def get_driver():
     options = uc.ChromeOptions()
@@ -208,6 +209,7 @@ def dixy_parse_category(url: str) -> str:
     for page in range(2, last_page + 1):
         url = f"{url}?page={page}"
         print(url)
+        time.sleep(12)
         driver.get(url)
         try:
             WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
@@ -221,7 +223,6 @@ def dixy_parse_category(url: str) -> str:
             blocks.update(page_blocks)
         else:
             break
-        time.sleep(3)
     return blocks
 
 def dixy_parse_category_page(html: str) -> str:
@@ -242,6 +243,44 @@ def dixy_parse_category_page(html: str) -> str:
         price_text = price_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if price_el else None
         discount_el = card.find(class_=DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
         discount_text = discount_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if discount_el else None
+        page_blocks[link] = [name_text, price_text, discount_text, article]
+    return page_blocks
+
+def chizhik_parse_category(url: str) -> str:
+    driver.get(url)
+    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
+    time.sleep(3)
+    for i in range(30):
+        driver.execute_script("document.body.scrollTop += 2000;")
+        time.sleep(0.1) 
+    html = driver.page_source
+    soup = BeautifulSoup(html, "html.parser")
+    page_blocks = {}
+    cards = soup.find_all("div", class_="css-6n4fw9")
+    for card in cards:
+        not_in_stock = card.find(class_="css-3hcm5q")
+        if not_in_stock:
+            continue
+        article_el = card.find(class_="css-1ovawgy")
+        article = article_el.get("data-qa", "").split("-")[-1] if article_el else None
+        name_el = card.find("p", class_="css-ijz3vq")
+        name_text = name_el.get_text(strip=True) if name_el else ""
+        link_el = card.find("a", class_="css-15jfzpq")
+        link = link_el.get("href", "") if link_el else ""
+        if not link:
+            continue
+        if link and not link.startswith("http"):
+            link = CHIZHIK_URL + link.split("?")[0]
+        price_rub_el = card.find(class_="css-gl8r4y")
+        price_rub_text = price_rub_el.get_text(strip=True).replace('\xa0', '') if price_rub_el else None
+        price_kopeek_el = card.find(class_="css-h1dtet")
+        price_kopeek_text = price_kopeek_el.get_text(strip=True) if price_kopeek_el else None
+        price_text = price_rub_text + "." + price_kopeek_text if price_rub_text and price_kopeek_text else None
+        discount_rub_el = card.find(class_="css-1x53jpj")
+        discount_rub_text = discount_rub_el.get_text(strip=True).replace('\xa0', '') if discount_rub_el else None
+        discount_kopeek_el = card.find(class_="css-t7jqfn")
+        discount_kopeek_text = discount_kopeek_el.get_text(strip=True) if discount_kopeek_el else None
+        discount_text = discount_rub_text + "." + discount_kopeek_text if discount_rub_text and discount_kopeek_text else None
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
 
@@ -312,40 +351,33 @@ def test_write_to_csv(blocks: dict, filename: str):
         for url, (name, price, discount, article) in blocks.items():
             writer.writerow([url, name, price, discount, article])
 
-
 if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver_no_images()
     time.sleep(1)
     conn = psycopg2.connect(DATABASE_URL)
+    dixy_cats = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
     try:
-        shop = "Ашан"
-        for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
-            cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
-            blocks = auchan_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        shop = "Лента"
-        for category in LENTA_FOOD_CATEGORIES_DICT.keys():
-            cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
-            blocks = lenta_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Ашан"
+        # for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+        #     cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
+        #     blocks = auchan_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Лента"
+        # for category in LENTA_FOOD_CATEGORIES_DICT.keys():
+        #     cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
+        #     blocks = lenta_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Чижик"
+        # for category in CHIZHIK_FOOD_CATEGORIES_DICT.keys():
+        #     cat_label = CHIZHIK_FOOD_CATEGORIES_DICT[category]
+        #     blocks = chizhik_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         shop = "Дикси"
-        dixy_cats = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
-        for category in dixy_cats[:5]:
-            cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
-            blocks = dixy_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        time.sleep(300)
-        for category in dixy_cats[5:10]:
-            cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
-            blocks = dixy_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        time.sleep(300)
-        for category in dixy_cats[10:]:
+        for category in DIXY_FOOD_CATEGORIES_DICT.keys():
             cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
             blocks = dixy_parse_category(category)
             if blocks:

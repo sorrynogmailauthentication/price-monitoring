@@ -104,7 +104,7 @@ def get_dixy_price(url, driver):
     try:
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-        time.sleep(0.5)
+        time.sleep(2)
         price_element = driver.find_element(By.CLASS_NAME, DIXY_PRICE_ELEMENT)
         if not price_element:
             raise ValueError()
@@ -181,7 +181,7 @@ def get_lenta_price(url, driver):
     try:
         driver.get(url)
         WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
-        time.sleep(1)
+        time.sleep(2)
         price_elements = driver.find_elements(By.XPATH, f"//span[starts-with(@class, '{LENTA_PRICE_ELEMENT}')]")
         if not price_elements:
             not_in_stock = driver.find_elements(By.XPATH, "//p[@class='out-of-stock-goods']")
