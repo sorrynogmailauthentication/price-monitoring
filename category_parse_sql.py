@@ -1,4 +1,5 @@
 import os
+from turtle import right
 import undetected_chromedriver as uc
 import time
 from datetime import datetime
@@ -44,12 +45,18 @@ DIXY_ITEM_CARD_PRICE_CLASS = "card__price-num"
 DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "card__price-crossed"
 DIXY_ITEM_CARD_LINK_CLASS = "card__link"
 DIXY_URL = "dixy.ru"
+
 CHIZHIK_URL = "https://chizhik.club"
+
+OKEY_DOSTAVKA_URL = "https://www.okeydostavka.ru"
 
 def get_driver():
     options = uc.ChromeOptions()
-    # prefs = {"profile.managed_default_content_settings.images": 2}
-    # options.add_experimental_option("prefs", prefs)
+    user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile_1"
+    if not os.path.exists(user_data_dir):
+        os.makedirs(user_data_dir)
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+    options.add_argument("--profile-directory=Default")
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
@@ -209,7 +216,7 @@ def dixy_parse_category(url: str) -> str:
     for page in range(2, last_page + 1):
         url = f"{url}?page={page}"
         print(url)
-        time.sleep(12)
+        time.sleep(15)
         driver.get(url)
         try:
             WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
@@ -283,6 +290,94 @@ def chizhik_parse_category(url: str) -> str:
         discount_text = discount_rub_text + "." + discount_kopeek_text if discount_rub_text and discount_kopeek_text else None
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
+
+def okey_parse_category(url: str) -> str:
+    blocks = {}
+    driver.get(url)
+    print(url)
+    try:
+        WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
+    except TimeoutException:
+        input("TimeoutException")
+        driver.get(url)
+        time.sleep(1)
+        WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
+    time.sleep(2)
+    for i in range(3):
+        driver.execute_script("window.scrollBy(0, 800);")
+        time.sleep(0.1) 
+    driver.execute_script("window.scrollTo(0, 0);")
+    html = driver.page_source
+    page_blocks = okey_parse_category_page(html)
+    print(page_blocks)
+    print(len(page_blocks))
+    if page_blocks:
+        blocks.update(page_blocks)
+    page_links = driver.find_elements(By.CSS_SELECTOR, ".pageControl.number a")
+    if page_links:
+        page_number = int(len(page_links)/2)
+        page_links = page_links[0:page_number]
+        text = None
+        for page_link in page_links:
+            text = page_link.text.strip()
+        last_page = int(text)
+        print(last_page)
+        for i in range(0, last_page-1):
+            try:
+                first_product_before = driver.find_element(By.CLASS_NAME, "product-price__container").text
+                right_arrow = driver.find_element(By.CSS_SELECTOR, "a.right_arrow")
+                right_arrow.click()
+                time.sleep(2)
+                for i in range(5):
+                    driver.execute_script("window.scrollBy(0, 800);")
+                    time.sleep(0.1) 
+                driver.execute_script("window.scrollTo(0, 0);")
+                time.sleep(2)
+                last_item = driver.find_elements(By.CLASS_NAME, "product-price__container")[-1]
+                driver.execute_script("arguments[0].scrollIntoView();", last_item)
+                html = driver.execute_script("return document.documentElement.outerHTML;")
+                page_blocks = okey_parse_category_page(html)
+                print(page_blocks)
+                print(len(page_blocks))
+                if page_blocks:
+                    blocks.update(page_blocks)
+                else:
+                    break
+            except (Exception, TimeoutException):
+                input("TimeoutException")
+                break
+    return blocks
+
+def okey_parse_category_page(html: str) -> str:
+    page_blocks = {}
+    soup = BeautifulSoup(html, "html.parser")
+    cards = soup.find_all("div", class_="ok-theme")
+    for card in cards:
+        article = None
+        name_el = card.find("a", tabindex="-1")
+        name_text = name_el.get_text(strip=True) if name_el else ""
+        link = card.get("data-catentry-id", "") if name_el else ""
+        if not link:
+            continue
+        if link and not link.startswith("http"):
+            link = OKEY_DOSTAVKA_URL + "/msk/"+ link
+        discount_el = card.find("span", class_="label small crossed")
+        discount_text = discount_el.get_text(strip=True).replace("\xa0", "").replace(",", ".").replace("₽", "").strip()
+        if discount_text == "":
+            discount_text = None
+            price_el = card.find("span", class_="price label")
+        else:
+            price_el = card.find("span", class_="label-red")
+        price_text = price_el.get_text(strip=True).replace("\xa0", "").replace(",", ".").replace("₽", "").strip() if price_el else None
+
+        page_blocks[link] = [name_text, price_text, discount_text, article]
+    return page_blocks
+
+driver = get_driver()
+driver.get("https://google.com")
+time.sleep(1)
+okey_parse_category("https://www.okeydostavka.ru/msk/ovoshchi-i-frukty/ovoshchi")
+exit()
 
 def _parse_price(price_text):
     """Convert scraped price string (e.g. '89,99') to numeric or None."""
@@ -358,26 +453,27 @@ if __name__ == "__main__":
     conn = psycopg2.connect(DATABASE_URL)
     dixy_cats = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
     try:
-        # shop = "Ашан"
-        # for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
-        #     blocks = auchan_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        # shop = "Лента"
-        # for category in LENTA_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
-        #     blocks = lenta_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        # shop = "Чижик"
-        # for category in CHIZHIK_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = CHIZHIK_FOOD_CATEGORIES_DICT[category]
-        #     blocks = chizhik_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Ашан"
+        for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+            cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
+            blocks = auchan_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Лента"
+        for category in LENTA_FOOD_CATEGORIES_DICT.keys():
+            cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
+            blocks = lenta_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Чижик"
+        for category in CHIZHIK_FOOD_CATEGORIES_DICT.keys():
+            cat_label = CHIZHIK_FOOD_CATEGORIES_DICT[category]
+            blocks = chizhik_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         shop = "Дикси"
-        for category in DIXY_FOOD_CATEGORIES_DICT.keys():
+        list_categories = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
+        for category in list_categories[10:]:
             cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
             blocks = dixy_parse_category(category)
             if blocks:
