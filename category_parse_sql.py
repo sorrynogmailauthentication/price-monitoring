@@ -1,5 +1,5 @@
 import os
-from turtle import right
+import chompjs
 import undetected_chromedriver as uc
 import time
 from datetime import datetime
@@ -324,7 +324,6 @@ def okey_parse_category(url: str) -> str:
         print(last_page)
         for i in range(0, last_page-1):
             try:
-                first_product_before = driver.find_element(By.CLASS_NAME, "product-price__container").text
                 right_arrow = driver.find_element(By.CSS_SELECTOR, "a.right_arrow")
                 right_arrow.click()
                 time.sleep(2)
@@ -333,8 +332,6 @@ def okey_parse_category(url: str) -> str:
                     time.sleep(0.1) 
                 driver.execute_script("window.scrollTo(0, 0);")
                 time.sleep(2)
-                last_item = driver.find_elements(By.CLASS_NAME, "product-price__container")[-1]
-                driver.execute_script("arguments[0].scrollIntoView();", last_item)
                 html = driver.execute_script("return document.documentElement.outerHTML;")
                 page_blocks = okey_parse_category_page(html)
                 print(page_blocks)
@@ -353,31 +350,25 @@ def okey_parse_category_page(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
     cards = soup.find_all("div", class_="ok-theme")
     for card in cards:
-        article = None
-        name_el = card.find("a", tabindex="-1")
-        name_text = name_el.get_text(strip=True) if name_el else ""
-        link = card.get("data-catentry-id", "") if name_el else ""
-        if not link:
+        try:
+            script_el = card.find("script")
+            start = script_el.text.find('var product = {')
+            end = script_el.text.find('};')
+            product_json = script_el.text[start+14:end+1]
+            product_dict = chompjs.parse_js_object(product_json)
+            article = product_dict["skuId"]
+            name_text = product_dict["name"]
+            link = OKEY_DOSTAVKA_URL + "/msk/" + article
+            price_text = product_dict["price"]
+            discount_el = card.find("span", class_="label small crossed")
+            discount_text = discount_el.get_text(strip=True).replace("\xa0", "").replace(",", ".").replace("₽", "").strip()
+            if discount_text == "":
+                discount_text = None
+            page_blocks[link] = [name_text, price_text, discount_text, article]
+        except Exception as e:
+            print(e)
             continue
-        if link and not link.startswith("http"):
-            link = OKEY_DOSTAVKA_URL + "/msk/"+ link
-        discount_el = card.find("span", class_="label small crossed")
-        discount_text = discount_el.get_text(strip=True).replace("\xa0", "").replace(",", ".").replace("₽", "").strip()
-        if discount_text == "":
-            discount_text = None
-            price_el = card.find("span", class_="price label")
-        else:
-            price_el = card.find("span", class_="label-red")
-        price_text = price_el.get_text(strip=True).replace("\xa0", "").replace(",", ".").replace("₽", "").strip() if price_el else None
-
-        page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
-
-driver = get_driver()
-driver.get("https://google.com")
-time.sleep(1)
-okey_parse_category("https://www.okeydostavka.ru/msk/ovoshchi-i-frukty/ovoshchi")
-exit()
 
 def _parse_price(price_text):
     """Convert scraped price string (e.g. '89,99') to numeric or None."""
@@ -448,10 +439,10 @@ def test_write_to_csv(blocks: dict, filename: str):
 
 if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
-    driver = get_driver_no_images()
-    time.sleep(1)
+    driver = get_driver()
+    driver.get("https://google.com")
+    time.sleep(2)
     conn = psycopg2.connect(DATABASE_URL)
-    dixy_cats = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
     try:
         shop = "Ашан"
         for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
@@ -478,6 +469,12 @@ if __name__ == "__main__":
             blocks = dixy_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Окей"
+        # for category in OKEY_FOOD_CATEGORIES_DICT.keys():
+        #     cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
+        #     blocks = okey_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
         conn.close()
         driver.quit()
