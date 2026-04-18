@@ -62,7 +62,6 @@ def get_driver():
 
 def get_driver_no_images():
     options = uc.ChromeOptions()
-    options.add_argument('--start-maximized')
     user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile_1"
     if not os.path.exists(user_data_dir):
         os.makedirs(user_data_dir)
@@ -440,6 +439,7 @@ def test_write_to_csv(blocks: dict, filename: str):
 if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver()
+    # driver = get_driver_proxy()
     driver.get("https://google.com")
     time.sleep(2)
     conn = psycopg2.connect(DATABASE_URL)
@@ -462,13 +462,13 @@ if __name__ == "__main__":
             blocks = chizhik_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        shop = "Дикси"
-        list_categories = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
-        for category in list_categories[10:]:
-            cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
-            blocks = dixy_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Дикси"
+        # list_categories = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
+        # for category in list_categories[10:]:
+        #     cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
+        #     blocks = dixy_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         # shop = "Окей"
         # for category in OKEY_FOOD_CATEGORIES_DICT.keys():
         #     cat_label = OKEY_FOOD_CATEGORIES_DICT[category]

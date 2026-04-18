@@ -10,6 +10,9 @@ import os
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
+from dotenv import load_dotenv
+
+load_dotenv()
 
 LENTA_PRICE_REGEX = r'\d+,\d{2}'
 LENTA_PRICE_ELEMENT = 'main-price title-28-20'
@@ -26,8 +29,14 @@ AUCHAN_PRICE_ELEMENT = 'styles_price'
 PEREKRESTOK_URL = "https://www.perekrestok.ru/"
 PYATEROCHKA_URL = "https://5ka.ru/"
 AUCHAN_URL = "https://www.auchan.ru/"
+PROXY_HOST = os.getenv('PROXY_HOST')
+PROXY_PORT = os.getenv('PROXY_PORT')
+PROXY_USER = os.getenv('PROXY_USER')
+PROXY_PASS = os.getenv('PROXY_PASS')
 
 CHROMIUM_VERSION = 146
+
+proxy_url = f"http://{PROXY_HOST}:{PROXY_PORT}"
 
 def get_driver():
     options = uc.ChromeOptions()
@@ -36,6 +45,7 @@ def get_driver():
         os.makedirs(user_data_dir)
     options.add_argument(f"--user-data-dir={user_data_dir}")
     options.add_argument("--profile-directory=Default")
+    options.add_argument(f"--proxy-server={proxy_url}")
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
@@ -51,7 +61,7 @@ def get_auchan_price(url, driver):
     price = None
     try:
         driver.get(url)
-        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
+        WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, "styles_price__U1y_f")))
         time.sleep(0.5)
         price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{AUCHAN_PRICE_ELEMENT}')]")
         if not price_element:
@@ -236,6 +246,8 @@ if __name__ == "__main__":
     df[today] = ''
     driver = get_driver()
     time.sleep(1)
+    driver.get("https://www.google.com")
+    time.sleep(5)
     for i in range(1):
         defeat_perekrestok_pyaterochka_robot_protection(driver, PYATEROCHKA_URL)
         time.sleep(1)
@@ -250,6 +262,7 @@ if __name__ == "__main__":
     for name, url in PEREKRESTOK_PRODUCT_LIST_DICT.items():
         price = get_perekrestok_price(url, driver)
         if "Forbidden" in driver.page_source:
+            print(url)
             break
         df.loc[df['Product URL'] == url, today] = price
         time.sleep(0.5)
