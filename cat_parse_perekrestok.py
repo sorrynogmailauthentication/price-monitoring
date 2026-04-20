@@ -79,6 +79,8 @@ def perekrestok_parse_category(url: str) -> str:
     time.sleep(1)
     html = driver.page_source
     page_blocks = perekrestok_parse_category_page(html)
+    if page_blocks:
+        blocks.update(page_blocks)
     print(len(page_blocks))
     return blocks
 

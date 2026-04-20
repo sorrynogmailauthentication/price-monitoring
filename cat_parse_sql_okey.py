@@ -1,5 +1,5 @@
 import os
-import chompjs
+import demjson3
 import undetected_chromedriver as uc
 import time
 from datetime import datetime
@@ -120,8 +120,12 @@ def okey_parse_category_page(html: str) -> str:
             script_el = card.find("script")
             start = script_el.text.find('var product = {')
             end = script_el.text.find('};')
-            product_json = script_el.text[start+14:end+1]
-            product_dict = chompjs.parse_js_object(product_json)
+            brand_start = script_el.text.find('brand:')
+            brand_end = script_el.text.find('category:')
+            text_before_brand = script_el.text[start+14:brand_start]
+            text_after_brand = script_el.text[brand_end:end+1]
+            product_json = text_before_brand + text_after_brand
+            product_dict = demjson3.decode(product_json)
             article = product_dict["skuId"]
             name_text = product_dict["name"]
             link = OKEY_DOSTAVKA_URL + "/msk/" + article
@@ -131,6 +135,8 @@ def okey_parse_category_page(html: str) -> str:
             if discount_text == "":
                 discount_text = None
             page_blocks[link] = [name_text, price_text, discount_text, article]
+            print(page_blocks)
+            exit()
         except Exception as e:
             print(e)
             if product_json:
