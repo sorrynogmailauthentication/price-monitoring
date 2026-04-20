@@ -1,5 +1,4 @@
 import os
-import chompjs
 import undetected_chromedriver as uc
 import time
 from datetime import datetime
@@ -20,25 +19,18 @@ DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
 CHROMIUM_VERSION = 147
 
+PEREKRESTOK_URL = "https://www.perekrestok.ru"
+
 PROXY_HOST = os.getenv('PROXY_HOST')
 PROXY_PORT = os.getenv('PROXY_PORT')
 PROXY_USER = os.getenv('PROXY_USER')
 PROXY_PASS = os.getenv('PROXY_PASS')
 
-DIXY_KEY_ELEMENT = "listing__wrapper"
-DIXY_PAGINATION_ELEMENT = "listing-pagination"
-DIXY_ITEM_CARD_CONTAINER = "card"
-DIXY_ITEM_CARD_NAME_CLASS = "card__title"
-DIXY_ITEM_CARD_PRICE_CLASS = "card__price-num"
-DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "card__price-crossed"
-DIXY_ITEM_CARD_LINK_CLASS = "card__link"
-DIXY_URL = "dixy.ru"
-
 proxy_url = f"http://{PROXY_HOST}:{PROXY_PORT}"
 
 def get_driver():
     options = uc.ChromeOptions()
-    user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile_3"
+    user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile_4"
     if not os.path.exists(user_data_dir):
         os.makedirs(user_data_dir)
     options.add_argument(f"--user-data-dir={user_data_dir}")
@@ -59,6 +51,65 @@ def get_opacity(d):
     el = d.find_element(*loader_sel)
     # Берем computed style, а не только inline style
     return float(d.execute_script("return parseFloat(getComputedStyle(arguments[0]).opacity) || 0;", el))
+
+
+def perekrestok_parse_category(url: str) -> str:
+    blocks = {}
+    try:
+        driver.get(url)
+    except (Exception, TimeoutException) as e:
+        print("TimeoutException")
+        driver.get(url)
+    print(url)
+    try:
+        WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-card__price")))
+    except TimeoutException:
+        print("TimeoutException")
+        if "xpvnsulc" in driver.current_url:
+            print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
+            driver.find_element("css selector", "label[for='is-robot']").click()
+            time.sleep(2)
+        driver.get(url)
+        time.sleep(1)
+        try:
+            WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-card__price")))
+        except TimeoutException:
+            print("TimeoutException")
+            return blocks
+    time.sleep(1)
+    html = driver.page_source
+    page_blocks = perekrestok_parse_category_page(html)
+    print(len(page_blocks))
+    return blocks
+
+def perekrestok_parse_category_page(html: str) -> str:
+    page_blocks = {}
+    soup = BeautifulSoup(html, "html.parser")
+    cards = soup.find_all("div", class_="product-card-wrapper")
+    for card in cards:
+        try:
+            link_el = card.find("a", class_="product-card__title")
+            link_text = link_el.get("href", "") if link_el else ""
+            link = PEREKRESTOK_URL + link_text
+            article = link_text.split("-")[-1]
+            name_el = card.find("a", class_="product-card__title-link")
+            name_text = name_el.get_text(strip=True) if name_el else ""
+            price_el = card.find("div", class_="price-new")
+            texts = list(price_el.stripped_strings) 
+            price = texts[1] if len(texts) > 1 else texts[0]
+            price_text = price.replace('\xa0', '').replace(',', '.').replace('₽', '').strip()
+            discount_el = card.find("div", class_="price-old")
+            if discount_el:
+                texts = list(discount_el.stripped_strings) 
+                discount = texts[1] if len(texts) > 1 else texts[0]
+                discount_text = discount.replace('\xa0', '').replace(',', '.').replace('₽', '').strip()
+            else:
+                discount_text = None
+            page_blocks[link] = [name_text, price_text, discount_text, article]
+        except Exception as e:
+            print(e)
+            continue
+    return page_blocks
 
 def _parse_price(price_text):
     """Convert scraped price string (e.g. '89,99') to numeric or None."""
@@ -128,76 +179,39 @@ def test_write_to_csv(blocks: dict, filename: str):
             writer.writerow([url, name, price, discount, article])
 
 def wait_until_challenge_cleared(driver, timeout=120):
-    WebDriverWait(driver, timeout).until(
-        lambda d: "xpvnsulc" not in (d.current_url or "").lower()
-    )
+    WebDriverWait(driver, timeout).until(lambda d: "xpvnsulc" not in (d.current_url or "").lower())
 
-def dixy_parse_category(url: str) -> str:
+def defeat_perekrestok_pyaterochka_robot_protection(driver, url):
     driver.get(url)
-    page_links = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
-    html = driver.page_source
-    pages_list = [el.text for el in page_links]
-    last_page = int(pages_list[-1]) if pages_list else 1
-    blocks = {}
-    page_blocks = dixy_parse_category_page(html)
-    if page_blocks:
-        blocks.update(page_blocks)
-    for page in range(2, last_page + 1):
-        url = f"{url}?page={page}"
-        print(url)
-        time.sleep(15)
-        driver.get(url)
-        try:
-            WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
-        except TimeoutException:
-            input("TimeoutException")
-            pass
-        html = driver.page_source
-        page_blocks = dixy_parse_category_page(html)
-        url = url.split("?")[0]
-        if page_blocks:
-            blocks.update(page_blocks)
-        else:
-            break
-    return blocks
-
-def dixy_parse_category_page(html: str) -> str:
-    page_blocks = {}
-    soup = BeautifulSoup(html, "html.parser")
-    cards = soup.find_all("article", class_=DIXY_ITEM_CARD_CONTAINER)
-    for card in cards:
-        article = card.get("product-id", "") if card else None
-        name_el = card.find(class_=DIXY_ITEM_CARD_NAME_CLASS)
-        name_text = name_el.get_text(strip=True) if name_el else ""
-        link_el = card.find("a", class_=DIXY_ITEM_CARD_LINK_CLASS)
-        link = link_el.get("href", "") if link_el else ""
-        if not link:
-            continue
-        if link and not link.startswith("http"):
-            link = DIXY_URL + link.split("?")[0]
-        price_el = card.find(class_=DIXY_ITEM_CARD_PRICE_CLASS)
-        price_text = price_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if price_el else None
-        discount_el = card.find(class_=DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
-        discount_text = discount_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if discount_el else None
-        page_blocks[link] = [name_text, price_text, discount_text, article]
-    return page_blocks
+    time.sleep(5)
+    if "xpvnsulc" in driver.current_url:
+        print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
+        wait_until_challenge_cleared(driver, timeout=180)
+        # driver.find_element("css selector", "label[for='is-robot']").click()
+        time.sleep(2)
 
 if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver()
     time.sleep(1)
-    driver.get("https://www.google.com/search?q=dixy+dostavka")
+    driver.get("https://www.google.com/search?q=perekrestok+dostavka")
     time.sleep(3)
     conn = psycopg2.connect(DATABASE_URL)
+    for i in range(1):
+        defeat_perekrestok_pyaterochka_robot_protection(driver, PEREKRESTOK_URL)
+        time.sleep(5)
     try:
-        shop = "Дикси"
-        list_categories = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
-        for category in list_categories[10:]:
-            cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
-            blocks = dixy_parse_category(category)
+        shop = "Перекресток"
+        count = 0
+        for category in PEREKRESTOK_FOOD_CATEGORIES_DICT.keys():
+            if count > 0 and count % 40 == 0:
+                time.sleep(180)
+            cat_label = PEREKRESTOK_FOOD_CATEGORIES_DICT[category]
+            blocks = perekrestok_parse_category(category)
+            count += 1
+            time.sleep(5)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
         conn.close()
         driver.quit()
-

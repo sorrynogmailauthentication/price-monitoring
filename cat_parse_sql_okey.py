@@ -18,7 +18,7 @@ load_dotenv()
 
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-CHROMIUM_VERSION = 147
+CHROMIUM_VERSION = 146
 
 OKEY_DOSTAVKA_URL = "https://www.okeydostavka.ru"
 
@@ -35,8 +35,8 @@ def get_driver():
     if not os.path.exists(user_data_dir):
         os.makedirs(user_data_dir)
     options.add_argument(f"--user-data-dir={user_data_dir}")
-    options.add_argument("--profile-directory=Default")
-    options.add_argument(f"--proxy-server={proxy_url}")
+    options.add_argument("--profile-directory=Mike")
+    # options.add_argument(f"--proxy-server={proxy_url}")
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
@@ -57,12 +57,11 @@ def get_opacity(d):
 def okey_parse_category(url: str) -> str:
     blocks = {}
     driver.get(url)
-    # driver.delete_all_cookies()
     print(url)
     try:
-        WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
-    except TimeoutException:
-        print("TimeoutException")
+        WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
+    except (Exception, TimeoutException) as e:
+        print(f"TimeoutException {url}, Error: {e}")
         driver.get(url)
         time.sleep(1)
         WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
@@ -107,8 +106,8 @@ def okey_parse_category(url: str) -> str:
                     blocks.update(page_blocks)
                 else:
                     break
-            except (Exception, TimeoutException):
-                print(f"TimeoutException {url}, Error: {Exception}")
+            except (Exception, TimeoutException) as e:
+                print(f"Ошибка при обработке {url}: {e}")
                 i-=1
     return blocks
 
@@ -134,6 +133,8 @@ def okey_parse_category_page(html: str) -> str:
             page_blocks[link] = [name_text, price_text, discount_text, article]
         except Exception as e:
             print(e)
+            if product_json:
+                print(product_json)
             continue
     return page_blocks
 
@@ -221,10 +222,10 @@ if __name__ == "__main__":
     driver = get_driver()
     time.sleep(1)
     driver.get("https://www.google.com/search?q=okey+dostavka")
-    time.sleep(10)
+    time.sleep(5)
     conn = psycopg2.connect(DATABASE_URL)
     for i in range(1):
-        defeat_perekrestok_pyaterochka_robot_protection(driver, OKEY_DOSTAVKA_URL)
+        defeat_perekrestok_pyaterochka_robot_protection(driver, "https://www.okeydostavka.ru/msk")
         time.sleep(1)
     try:
         shop = "Окей"

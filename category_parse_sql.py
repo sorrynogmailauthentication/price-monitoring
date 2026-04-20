@@ -1,5 +1,4 @@
 import os
-import chompjs
 import undetected_chromedriver as uc
 import time
 from datetime import datetime
@@ -19,7 +18,7 @@ load_dotenv()
 
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-CHROMIUM_VERSION = 146
+CHROMIUM_VERSION = 147
 
 LENTA_PAGINATION_ELEMENT = "pagination-nav__list"
 LENTA_PRICE_ELEMENT = "main-price"
@@ -37,18 +36,8 @@ AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardPicturePanel__sR0Mr"
 AUCHAN_URL = "https://www.auchan.ru"
 AUCHAN_ARTICLE_REGEX = re.compile(r'_(\d+?)_')
 
-DIXY_KEY_ELEMENT = "listing__wrapper"
-DIXY_PAGINATION_ELEMENT = "listing-pagination"
-DIXY_ITEM_CARD_CONTAINER = "card"
-DIXY_ITEM_CARD_NAME_CLASS = "card__title"
-DIXY_ITEM_CARD_PRICE_CLASS = "card__price-num"
-DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "card__price-crossed"
-DIXY_ITEM_CARD_LINK_CLASS = "card__link"
-DIXY_URL = "dixy.ru"
-
 CHIZHIK_URL = "https://chizhik.club"
 
-OKEY_DOSTAVKA_URL = "https://www.okeydostavka.ru"
 
 def get_driver():
     options = uc.ChromeOptions()
@@ -202,56 +191,6 @@ def auchan_parse_category_page(html: str) -> str:
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
 
-def dixy_parse_category(url: str) -> str:
-    driver.get(url)
-    page_links = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
-    html = driver.page_source
-    pages_list = [el.text for el in page_links]
-    last_page = int(pages_list[-1]) if pages_list else 1
-    blocks = {}
-    page_blocks = dixy_parse_category_page(html)
-    if page_blocks:
-        blocks.update(page_blocks)
-    for page in range(2, last_page + 1):
-        url = f"{url}?page={page}"
-        print(url)
-        time.sleep(15)
-        driver.get(url)
-        try:
-            WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
-        except TimeoutException:
-            input("TimeoutException")
-            pass
-        html = driver.page_source
-        page_blocks = dixy_parse_category_page(html)
-        url = url.split("?")[0]
-        if page_blocks:
-            blocks.update(page_blocks)
-        else:
-            break
-    return blocks
-
-def dixy_parse_category_page(html: str) -> str:
-    page_blocks = {}
-    soup = BeautifulSoup(html, "html.parser")
-    cards = soup.find_all("article", class_=DIXY_ITEM_CARD_CONTAINER)
-    for card in cards:
-        article = card.get("product-id", "") if card else None
-        name_el = card.find(class_=DIXY_ITEM_CARD_NAME_CLASS)
-        name_text = name_el.get_text(strip=True) if name_el else ""
-        link_el = card.find("a", class_=DIXY_ITEM_CARD_LINK_CLASS)
-        link = link_el.get("href", "") if link_el else ""
-        if not link:
-            continue
-        if link and not link.startswith("http"):
-            link = DIXY_URL + link.split("?")[0]
-        price_el = card.find(class_=DIXY_ITEM_CARD_PRICE_CLASS)
-        price_text = price_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if price_el else None
-        discount_el = card.find(class_=DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
-        discount_text = discount_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if discount_el else None
-        page_blocks[link] = [name_text, price_text, discount_text, article]
-    return page_blocks
-
 def chizhik_parse_category(url: str) -> str:
     driver.get(url)
     WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
@@ -288,85 +227,6 @@ def chizhik_parse_category(url: str) -> str:
         discount_kopeek_text = discount_kopeek_el.get_text(strip=True) if discount_kopeek_el else None
         discount_text = discount_rub_text + "." + discount_kopeek_text if discount_rub_text and discount_kopeek_text else None
         page_blocks[link] = [name_text, price_text, discount_text, article]
-    return page_blocks
-
-def okey_parse_category(url: str) -> str:
-    blocks = {}
-    driver.get(url)
-    print(url)
-    try:
-        WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
-    except TimeoutException:
-        input("TimeoutException")
-        driver.get(url)
-        time.sleep(1)
-        WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
-    time.sleep(2)
-    for i in range(3):
-        driver.execute_script("window.scrollBy(0, 800);")
-        time.sleep(0.1) 
-    driver.execute_script("window.scrollTo(0, 0);")
-    html = driver.page_source
-    page_blocks = okey_parse_category_page(html)
-    print(page_blocks)
-    print(len(page_blocks))
-    if page_blocks:
-        blocks.update(page_blocks)
-    page_links = driver.find_elements(By.CSS_SELECTOR, ".pageControl.number a")
-    if page_links:
-        page_number = int(len(page_links)/2)
-        page_links = page_links[0:page_number]
-        text = None
-        for page_link in page_links:
-            text = page_link.text.strip()
-        last_page = int(text)
-        print(last_page)
-        for i in range(0, last_page-1):
-            try:
-                right_arrow = driver.find_element(By.CSS_SELECTOR, "a.right_arrow")
-                right_arrow.click()
-                time.sleep(2)
-                for i in range(5):
-                    driver.execute_script("window.scrollBy(0, 800);")
-                    time.sleep(0.1) 
-                driver.execute_script("window.scrollTo(0, 0);")
-                time.sleep(2)
-                html = driver.execute_script("return document.documentElement.outerHTML;")
-                page_blocks = okey_parse_category_page(html)
-                print(page_blocks)
-                print(len(page_blocks))
-                if page_blocks:
-                    blocks.update(page_blocks)
-                else:
-                    break
-            except (Exception, TimeoutException):
-                input("TimeoutException")
-                break
-    return blocks
-
-def okey_parse_category_page(html: str) -> str:
-    page_blocks = {}
-    soup = BeautifulSoup(html, "html.parser")
-    cards = soup.find_all("div", class_="ok-theme")
-    for card in cards:
-        try:
-            script_el = card.find("script")
-            start = script_el.text.find('var product = {')
-            end = script_el.text.find('};')
-            product_json = script_el.text[start+14:end+1]
-            product_dict = chompjs.parse_js_object(product_json)
-            article = product_dict["skuId"]
-            name_text = product_dict["name"]
-            link = OKEY_DOSTAVKA_URL + "/msk/" + article
-            price_text = product_dict["price"]
-            discount_el = card.find("span", class_="label small crossed")
-            discount_text = discount_el.get_text(strip=True).replace("\xa0", "").replace(",", ".").replace("₽", "").strip()
-            if discount_text == "":
-                discount_text = None
-            page_blocks[link] = [name_text, price_text, discount_text, article]
-        except Exception as e:
-            print(e)
-            continue
     return page_blocks
 
 def _parse_price(price_text):
@@ -462,19 +322,6 @@ if __name__ == "__main__":
             blocks = chizhik_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        # shop = "Дикси"
-        # list_categories = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
-        # for category in list_categories[10:]:
-        #     cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
-        #     blocks = dixy_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        # shop = "Окей"
-        # for category in OKEY_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
-        #     blocks = okey_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
         conn.close()
         driver.quit()

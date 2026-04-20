@@ -356,14 +356,12 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/115/slivki" : "Сливки",
 "https://www.perekrestok.ru/cat/c/124/molocnye-konservy" : "Молочные консервы",
 "https://www.perekrestok.ru/cat/c/116/molocnye-koktejli" : "Молочные коктейли",
-
 "https://www.perekrestok.ru/cat/c/150/ovosi" : "Овощи",
 "https://www.perekrestok.ru/cat/c/153/frukty" : "Фрукты",
 "https://www.perekrestok.ru/cat/c/154/agody" : "Ягоды",
 "https://www.perekrestok.ru/cat/c/151/zelen-i-salaty" : "Зелень и салаты",
 "https://www.perekrestok.ru/cat/c/155/griby" : "Грибы",
 "https://www.perekrestok.ru/cat/c/149/solena" : "Соленья",
-
 "https://www.perekrestok.ru/cat/c/105/makarony" : "Макароны",
 "https://www.perekrestok.ru/cat/c/104/rastitelnoe-maslo" : "Растительное масло",
 "https://www.perekrestok.ru/cat/c/107/krupy" : "Крупы",
@@ -372,7 +370,6 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/106/muka" : "Мука",
 "https://www.perekrestok.ru/cat/c/102/komponenty-dla-vypecki" : "Компоненты для выпечки",
 "https://www.perekrestok.ru/cat/c/101/sol" : "Соль",
-
 "https://www.perekrestok.ru/cat/c/202/cipsy" : "Чипсы",
 "https://www.perekrestok.ru/cat/c/774/nacos" : "Начос",
 "https://www.perekrestok.ru/cat/c/709/sneki" : "Снеки",
@@ -386,7 +383,6 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/716/suhary" : "Сухари",
 "https://www.perekrestok.ru/cat/c/717/hlebcy" : "Хлебцы",
 "https://www.perekrestok.ru/cat/c/718/vodorosli" : "Водоросли",
-
 "https://www.perekrestok.ru/cat/c/197/pecene" :"Печенье",
 "https://www.perekrestok.ru/cat/c/702/vafli" : "Вафли",
 "https://www.perekrestok.ru//cat/c/703/praniki" : "Пряники",
@@ -406,7 +402,6 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/188/vostocnye-sladosti-halva" : "Восточные сладости, халва",
 "https://www.perekrestok.ru/cat/c/190/zevatelnaa-rezinka" : "Жевательная резинка",
 "https://www.perekrestok.ru/cat/c/321/morozenoe" : "Мороженое",
-
 "https://www.perekrestok.ru/cat/c/208/voda" : "Вода",
 "https://www.perekrestok.ru/cat/c/209/gazirovannye-napitki" : "Газированные напитки", 
 "https://www.perekrestok.ru/cat/c/211/soki" : "Соки",
@@ -424,14 +419,12 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/743/kompoty" : "Компоты",
 "https://www.perekrestok.ru/cat/c/744/sbiten-i-uzvary" : "Сбитень и узвары",
 "https://www.perekrestok.ru/cat/c/216/diabeticeskie-napitki" : "Диабетические напитки",
-
 "https://www.perekrestok.ru/cat/c/196/nasa-pekarna" : "Наша пекарня",
 "https://www.perekrestok.ru/cat/c/243/hleb" : "Хлеб",
 "https://www.perekrestok.ru/cat/c/1152/picca" : "Пицца",
 "https://www.perekrestok.ru/cat/c/244/lavas-i-lepeski" : "Лаваш и лепёшки",
 "https://www.perekrestok.ru/cat/c/245/hlebcy" : "Хлебцы",
 "https://www.perekrestok.ru/cat/c/246/hlebobulocnye-izdelia" : "Хлебобулочные изделия",
-
 "https://www.perekrestok.ru/cat/c/1320/vse-maso" : "Всё мясо",
 "https://www.perekrestok.ru/cat/c/138/maso-pticy" : "Мясо птицы",
 "https://www.perekrestok.ru/cat/c/951/saslyk" : "Шашлык",
@@ -447,7 +440,6 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/778/pastety" : "Паштеты",
 "https://www.perekrestok.ru/cat/c/781/zalivnoe" : "Заливное",
 "https://www.perekrestok.ru/cat/c/779/studni" : "Студни",
-
 "https://www.perekrestok.ru/cat/c/133/kolbasa" : "Колбаса",
 "https://www.perekrestok.ru/cat/c/783/vetcina" : "Ветчина",
 "https://www.perekrestok.ru/cat/c/134/sosiski" : "Сосиски",
@@ -458,7 +450,6 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/808/pastety" : "Паштеты",
 "https://www.perekrestok.ru/cat/c/810/zalivnoe" : "Заливное",
 "https://www.perekrestok.ru/cat/c/811/studni" : "Студни",
-
 "https://www.perekrestok.ru/cat/c/812/vsa-ryba" : "Вся рыба",
 "https://www.perekrestok.ru/cat/c/175/solenaa-marinovannaa-ryba" : "Солёная, маринованная рыба",
 "https://www.perekrestok.ru/cat/c/176/ohlazdennaa-ryba" : "Охлаждённая рыба",
@@ -469,7 +460,6 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/178/susenaa-ryba" : "Сушёная рыба",
 "https://www.perekrestok.ru/cat/c/184/rybnye-preservy" : "Рыбные пресервы",
 "https://www.perekrestok.ru/cat/c/186/sobstvennoe-proizvodstvo" : "Собственное производство",
-
 "https://www.perekrestok.ru/cat/c/58/picca-vareniki-pelmeni-bliny" : "Пицца, вареники, пельмени, блины",
 "https://www.perekrestok.ru/cat/c/55/moreprodukty" : "Морепродукты",
 "https://www.perekrestok.ru/cat/c/59/ovosi-i-smesi" : "Овощи и смеси",
@@ -480,7 +470,6 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/63/maso-ptica-i-subprodukty" : "Мясо, птица и субпродукты",
 "https://www.perekrestok.ru/cat/c/62/zamorozennye-deserty" : "Замороженные десерты",
 "https://www.perekrestok.ru/cat/c/305/led" : "Лёд",
-
 "https://www.perekrestok.ru/cat/c/180/ikra" : "Икра",
 "https://www.perekrestok.ru/cat/c/182/krabovoe-maso-i-palocki" : "Крабовое мясо и палочки",
 "https://www.perekrestok.ru/cat/c/179/krevetki" : "Креветки",
@@ -489,11 +478,9 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/788/koktejli-iz-moreproduktov" : "Коктейли из морепродуктов",
 "https://www.perekrestok.ru/cat/c/789/ustricy" : "Устрицы",
 "https://www.perekrestok.ru/cat/c/792/preservy-iz-moreproduktov" : "Пресервы из морепродуктов",
-
 "https://www.perekrestok.ru/cat/c/276/voda-i-napitki" : "Вода и напитки",
 "https://www.perekrestok.ru/cat/c/230/detskoe-pitanie" : "Детское питание",
 "https://www.perekrestok.ru/cat/c/277/detskie-smesi-i-zameniteli" : "Детские смеси и заменители",
-
 "https://www.perekrestok.ru/cat/c/218/sousy" : "Соусы",
 "https://www.perekrestok.ru/cat/c/221/majonez" : "Майонез",
 "https://www.perekrestok.ru/cat/c/219/ketcupy-i-tomatnye-sousy" : "Кетчупы и томатные соусы",
@@ -501,13 +488,11 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/223/gorcica" : "Горчица",
 "https://www.perekrestok.ru/cat/c/746/hren" : "Хрен",
 "https://www.perekrestok.ru/cat/c/222/uksus" : "Уксус",
-
 "https://www.perekrestok.ru/cat/c/80/kofe" : "Кофе",
 "https://www.perekrestok.ru/cat/c/82/caj" : "Чай",
 "https://www.perekrestok.ru/cat/c/83/sahar" : "Сахар",
 "https://www.perekrestok.ru/cat/c/81/kakao" : "Какао",
 "https://www.perekrestok.ru/cat/c/766/goracij-sokolad" : "Горячий шоколад",
-
 "https://www.perekrestok.ru/cat/c/225/hlopa" : "Хлопья",
 "https://www.perekrestok.ru/cat/c/747/musli" : "Мюсли",
 "https://www.perekrestok.ru/cat/c/748/podusecki" : "Подушечки",
@@ -518,18 +503,15 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/754/ris" : "Рис",
 "https://www.perekrestok.ru/cat/c/172/kasi" : "Каши",
 "https://www.perekrestok.ru/cat/c/755/kasi-bystrogo-prigotovlenia" : "Каши быстрого приготовления",
-
 "https://www.perekrestok.ru/cat/c/170/lapsa" : "Лапша",
 "https://www.perekrestok.ru/cat/c/169/supy" : "Супы",
 "https://www.perekrestok.ru/cat/c/171/pure" : "Пюре",
 "https://www.perekrestok.ru/cat/c/756/kasi" : "Каши",
 "https://www.perekrestok.ru/cat/c/173/vtorye-bluda" : "Вторые блюда",
-
 "https://www.perekrestok.ru/cat/c/76/ovosnye-konservy" : "Овощные консервы",
 "https://www.perekrestok.ru/cat/c/75/rybnye-konservy" : "Рыбные консервы",
 "https://www.perekrestok.ru/cat/c/78/masnye-konservy" : "Мясные консервы",
 "https://www.perekrestok.ru/cat/c/77/fruktovye-konservy" : "Фруктовые консервы",
-
 "https://www.perekrestok.ru/cat/c/24/diabeticeskaa-produkcia" : "Диабетическая продукция",
 "https://www.perekrestok.ru/cat/c/65/sportivnoe-pitanie-i-bad" : "Спортивное питание и БАД",
 "https://www.perekrestok.ru/cat/c/251/bez-glutena" : "Без глютена",
@@ -539,12 +521,10 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/255/pravilnye-sladosti" : "Правильные сладости",
 "https://www.perekrestok.ru/cat/c/257/napitki-s-polzoj" : "Напитки с пользой",
 "https://www.perekrestok.ru/cat/c/1676/funkcionalnye-produkty" : "Функциональные продукты",
-
 "https://www.perekrestok.ru/cat/c/159/orehi" : "Орехи",
 "https://www.perekrestok.ru/cat/c/161/semecki" : "Семечки",
 "https://www.perekrestok.ru/cat/c/158/smesi-orehov-i-suhofruktov" : "Смеси орехов и сухофруктов",
 "https://www.perekrestok.ru/cat/c/160/suhofrukty" : "Сухофрукты",
-
 "https://www.perekrestok.ru/cat/c/112/med" : "Мёд",
 "https://www.perekrestok.ru/cat/c/111/varene" : "Варенье",
 "https://www.perekrestok.ru/cat/c/109/dzem" : "Джем",

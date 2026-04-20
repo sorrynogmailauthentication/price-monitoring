@@ -34,7 +34,7 @@ PROXY_PORT = os.getenv('PROXY_PORT')
 PROXY_USER = os.getenv('PROXY_USER')
 PROXY_PASS = os.getenv('PROXY_PASS')
 
-CHROMIUM_VERSION = 146
+CHROMIUM_VERSION = 147
 
 proxy_url = f"http://{PROXY_HOST}:{PROXY_PORT}"
 
@@ -296,7 +296,7 @@ if __name__ == "__main__":
             encountered_auchan_robot_protection = True
         price = get_auchan_price(url, driver)
         df.loc[df['Product URL'] == url, today] = price
-        time.sleep(0.5)
+        time.sleep(2)
     df.to_csv(filename, index=False, encoding='utf-8-sig')
     if os.path.exists(directory) and os.path.isdir(directory):
         if not os.listdir(directory):

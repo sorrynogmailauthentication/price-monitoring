@@ -21,7 +21,7 @@ EXCEL_PATH = "auchan_prices.xlsx"
 DATE_FMT = "%Y-%m-%d"
 
 
-CHROMIUM_VERSION = 145
+CHROMIUM_VERSION = 147
 
 def get_driver():
     options = uc.ChromeOptions()
