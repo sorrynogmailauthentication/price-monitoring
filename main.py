@@ -295,6 +295,7 @@ if __name__ == "__main__":
             defeat_perekrestok_pyaterochka_robot_protection(driver, AUCHAN_URL)
             encountered_auchan_robot_protection = True
         price = get_auchan_price(url, driver)
+        time.sleep(2)
         df.loc[df['Product URL'] == url, today] = price
         time.sleep(2)
     df.to_csv(filename, index=False, encoding='utf-8-sig')

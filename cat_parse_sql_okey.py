@@ -61,10 +61,14 @@ def okey_parse_category(url: str) -> str:
     try:
         WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
     except (Exception, TimeoutException) as e:
-        print(f"TimeoutException {url}, Error: {e}")
+        print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
         driver.get(url)
         time.sleep(1)
-        WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
+        try:
+            WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
+        except TimeoutException:
+            print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
+            return blocks
     time.sleep(2)
     for i in range(3):
         driver.execute_script("window.scrollBy(0, 800);")
@@ -92,7 +96,7 @@ def okey_parse_category(url: str) -> str:
                     WebDriverWait(driver, 15).until(lambda d: get_opacity(d) > 0.01)
                 except TimeoutException:
                     pass
-                WebDriverWait(driver, 15).until(lambda d: get_opacity(d) <= 0.01)
+                WebDriverWait(driver, 20).until(lambda d: get_opacity(d) <= 0.01)
                 time.sleep(1)
                 for i in range(5):
                     driver.execute_script("window.scrollBy(0, 800);")
@@ -107,7 +111,7 @@ def okey_parse_category(url: str) -> str:
                 else:
                     break
             except (Exception, TimeoutException) as e:
-                print(f"Ошибка при обработке {url}: {e}")
+                print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
                 i-=1
     return blocks
 
@@ -135,8 +139,6 @@ def okey_parse_category_page(html: str) -> str:
             if discount_text == "":
                 discount_text = None
             page_blocks[link] = [name_text, price_text, discount_text, article]
-            print(page_blocks)
-            exit()
         except Exception as e:
             print(e)
             if product_json:
@@ -242,7 +244,7 @@ if __name__ == "__main__":
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(15)
+            time.sleep(17)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

@@ -207,11 +207,11 @@ if __name__ == "__main__":
         count = 0
         for category in PEREKRESTOK_FOOD_CATEGORIES_DICT.keys():
             if count > 0 and count % 40 == 0:
-                time.sleep(180)
+                time.sleep(300)
             cat_label = PEREKRESTOK_FOOD_CATEGORIES_DICT[category]
             blocks = perekrestok_parse_category(category)
             count += 1
-            time.sleep(5)
+            time.sleep(6)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

@@ -190,9 +190,12 @@ if __name__ == "__main__":
     time.sleep(3)
     conn = psycopg2.connect(DATABASE_URL)
     try:
+        count = 0
         shop = "Дикси"
-        list_categories = [item for item in DIXY_FOOD_CATEGORIES_DICT.keys()]
-        for category in list_categories[10:]:
+        for category in DIXY_FOOD_CATEGORIES_DICT.keys():
+            if count > 0 and count % 5 == 0:
+                time.sleep(300)
+            count += 1
             cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
             blocks = dixy_parse_category(category)
             if blocks:
