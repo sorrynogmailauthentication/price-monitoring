@@ -62,6 +62,9 @@ def okey_parse_category(url: str) -> str:
         WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
     except (Exception, TimeoutException) as e:
         print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
+        if "xpvnsulc" in driver.current_url:
+            print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
+            input("Press Enter to continue...")
         driver.get(url)
         time.sleep(1)
         try:
@@ -92,12 +95,13 @@ def okey_parse_category(url: str) -> str:
             try:
                 right_arrow = driver.find_element(By.CSS_SELECTOR, "a.right_arrow")
                 right_arrow.click()
+                time.sleep(2)
                 try:
                     WebDriverWait(driver, 15).until(lambda d: get_opacity(d) > 0.01)
                 except TimeoutException:
                     pass
-                WebDriverWait(driver, 20).until(lambda d: get_opacity(d) <= 0.01)
-                time.sleep(1)
+                WebDriverWait(driver, 30).until(lambda d: get_opacity(d) <= 0.01)
+                time.sleep(2)
                 for i in range(5):
                     driver.execute_script("window.scrollBy(0, 800);")
                     time.sleep(0.1) 
@@ -239,12 +243,12 @@ if __name__ == "__main__":
         shop = "Окей"
         count = 0
         for category in OKEY_FOOD_CATEGORIES_DICT.keys():
-            if count == 50:
-                time.sleep(300)
+            if count > 0 and count % 30 == 0:
+                time.sleep(180)
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(17)
+            time.sleep(20)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

@@ -67,7 +67,7 @@ def perekrestok_parse_category(url: str) -> str:
         print("TimeoutException")
         if "xpvnsulc" in driver.current_url:
             print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
-            driver.find_element("css selector", "label[for='is-robot']").click()
+            input("Press Enter to continue...")
             time.sleep(2)
         driver.get(url)
         time.sleep(1)
@@ -189,7 +189,6 @@ def defeat_perekrestok_pyaterochka_robot_protection(driver, url):
     if "xpvnsulc" in driver.current_url:
         print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
         wait_until_challenge_cleared(driver, timeout=180)
-        # driver.find_element("css selector", "label[for='is-robot']").click()
         time.sleep(2)
 
 if __name__ == "__main__":
@@ -211,7 +210,7 @@ if __name__ == "__main__":
             cat_label = PEREKRESTOK_FOOD_CATEGORIES_DICT[category]
             blocks = perekrestok_parse_category(category)
             count += 1
-            time.sleep(6)
+            time.sleep(15)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

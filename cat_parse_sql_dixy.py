@@ -145,7 +145,7 @@ def dixy_parse_category(url: str) -> str:
     for page in range(2, last_page + 1):
         url = f"{url}?page={page}"
         print(url)
-        time.sleep(15)
+        time.sleep(20)
         driver.get(url)
         try:
             WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
@@ -194,7 +194,7 @@ if __name__ == "__main__":
         shop = "Дикси"
         for category in DIXY_FOOD_CATEGORIES_DICT.keys():
             if count > 0 and count % 5 == 0:
-                time.sleep(300)
+                time.sleep(100)
             count += 1
             cat_label = DIXY_FOOD_CATEGORIES_DICT[category]
             blocks = dixy_parse_category(category)

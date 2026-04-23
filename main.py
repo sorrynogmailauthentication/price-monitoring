@@ -62,7 +62,7 @@ def get_auchan_price(url, driver):
     try:
         driver.get(url)
         WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, "styles_price__U1y_f")))
-        time.sleep(0.5)
+        time.sleep(2)
         price_element = driver.find_element(By.XPATH, f"//div[starts-with(@class, '{AUCHAN_PRICE_ELEMENT}')]")
         if not price_element:
             price = "Achan price element not found"
