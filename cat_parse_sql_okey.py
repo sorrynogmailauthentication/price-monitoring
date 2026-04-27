@@ -4,7 +4,11 @@ import undetected_chromedriver as uc
 import time
 from datetime import datetime
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    ElementNotInteractableException,
+    StaleElementReferenceException,
+)
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
@@ -40,19 +44,24 @@ def get_driver():
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
-def wait_for_element(driver, class_name: str):
-    try:
-        WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
-        return True
-    except TimeoutException:
-        return False
-
 loader_sel = (By.ID, "progress_bar_dialog")
 def get_opacity(d):
     el = d.find_element(*loader_sel)
     # Берем computed style, а не только inline style
     return float(d.execute_script("return parseFloat(getComputedStyle(arguments[0]).opacity) || 0;", el))
 
+def safe_click(driver, locator, timeout=20):
+    # 1) Wait until element is clickable
+    elem = WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(locator))
+    # 2) Bring into view (helps with sticky headers/overlays)
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", elem)
+    # 3) Try native click, fallback to JS click
+    try:
+        elem.click()
+    except (ElementClickInterceptedException, ElementNotInteractableException, StaleElementReferenceException):
+        # refetch in case it became stale
+        elem = driver.find_element(*locator)
+        driver.execute_script("arguments[0].click();", elem)
 
 def okey_parse_category(url: str) -> str:
     blocks = {}
@@ -60,7 +69,7 @@ def okey_parse_category(url: str) -> str:
     print(url)
     try:
         WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
-    except (Exception, TimeoutException) as e:
+    except Exception as e:
         print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
         if "xpvnsulc" in driver.current_url:
             print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
@@ -69,7 +78,7 @@ def okey_parse_category(url: str) -> str:
         time.sleep(1)
         try:
             WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
-        except TimeoutException:
+        except Exception as e:
             print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
             return blocks
     time.sleep(2)
@@ -86,20 +95,17 @@ def okey_parse_category(url: str) -> str:
     if page_links:
         page_number = int(len(page_links)/2)
         page_links = page_links[0:page_number]
+        page_idx = 1
         text = None
         for page_link in page_links:
             text = page_link.text.strip()
         last_page = int(text)
         print(last_page)
-        for i in range(0, last_page-1):
+        while page_idx < last_page:
             try:
-                right_arrow = driver.find_element(By.CSS_SELECTOR, "a.right_arrow")
-                right_arrow.click()
-                time.sleep(2)
-                try:
-                    WebDriverWait(driver, 15).until(lambda d: get_opacity(d) > 0.01)
-                except TimeoutException:
-                    pass
+                WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a.right_arrow")))
+                time.sleep(1)
+                safe_click(driver, (By.CSS_SELECTOR, "a.right_arrow"), timeout=30)
                 WebDriverWait(driver, 30).until(lambda d: get_opacity(d) <= 0.01)
                 time.sleep(2)
                 for i in range(5):
@@ -112,11 +118,11 @@ def okey_parse_category(url: str) -> str:
                 print(len(page_blocks))
                 if page_blocks:
                     blocks.update(page_blocks)
-                else:
-                    break
-            except (Exception, TimeoutException) as e:
+                page_idx += 1
+            except Exception as e:
                 print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
-                i-=1
+                page_idx -= 1
+                continue
     return blocks
 
 def okey_parse_category_page(html: str) -> str:
@@ -244,11 +250,11 @@ if __name__ == "__main__":
         count = 0
         for category in OKEY_FOOD_CATEGORIES_DICT.keys():
             if count > 0 and count % 30 == 0:
-                time.sleep(180)
+                time.sleep(300)
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(20)
+            time.sleep(15)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

@@ -127,14 +127,9 @@ def test_write_to_csv(blocks: dict, filename: str):
         for url, (name, price, discount, article) in blocks.items():
             writer.writerow([url, name, price, discount, article])
 
-def wait_until_challenge_cleared(driver, timeout=120):
-    WebDriverWait(driver, timeout).until(
-        lambda d: "xpvnsulc" not in (d.current_url or "").lower()
-    )
-
 def dixy_parse_category(url: str) -> str:
     driver.get(url)
-    page_links = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+    page_links = WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
     html = driver.page_source
     pages_list = [el.text for el in page_links]
     last_page = int(pages_list[-1]) if pages_list else 1
@@ -148,7 +143,7 @@ def dixy_parse_category(url: str) -> str:
         time.sleep(20)
         driver.get(url)
         try:
-            WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+            WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
         except TimeoutException:
             input("TimeoutException")
             pass

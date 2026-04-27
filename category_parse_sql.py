@@ -94,12 +94,14 @@ def lenta_parse_category(url: str) -> str:
             raw_value = page.get_text(strip=True, separator=",")
             last_page = int(raw_value.split(",")[-1])
     blocks = {}
+    print(url)
     page_blocks = lenta_parse_category_page(html)
     if page_blocks:
         blocks.update(page_blocks)
     base_url = url.rstrip("/")
     for page in range(2, last_page + 1):
-        url = f"{base_url}/page/{page}/" 
+        url = f"{base_url}/page/{page}/"
+        print(url)
         driver.get(url)
         wait_for_element(driver, LENTA_PRICE_ELEMENT)
         time.sleep(0.2)
@@ -114,7 +116,7 @@ def lenta_parse_category(url: str) -> str:
 def lenta_parse_category_page(html: str) -> str:
     page_blocks = {}
     soup = BeautifulSoup(html, "html.parser")
-    WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
+    WebDriverWait(driver, 15).until(lambda d: d.execute_script("return document.readyState") == "complete")
     card_container = soup.select(LENTA_CARD_CONTAINER)
     cards = card_container[0].find_all("div", class_="lu-grid__item")
     for card in cards:

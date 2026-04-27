@@ -46,37 +46,26 @@ def wait_for_element(driver, class_name: str):
     except TimeoutException:
         return False
 
-loader_sel = (By.ID, "progress_bar_dialog")
-def get_opacity(d):
-    el = d.find_element(*loader_sel)
-    # Берем computed style, а не только inline style
-    return float(d.execute_script("return parseFloat(getComputedStyle(arguments[0]).opacity) || 0;", el))
-
-
 def perekrestok_parse_category(url: str) -> str:
     blocks = {}
     try:
         driver.get(url)
-    except (Exception, TimeoutException) as e:
-        print("TimeoutException")
-        driver.get(url)
-    print(url)
-    try:
         WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-card__price")))
-    except TimeoutException:
-        print("TimeoutException")
+    except (Exception, TimeoutException) as e:
+        print(f"TimeoutException {url}: {type(e).__name__}: {repr(e)}")
         if "xpvnsulc" in driver.current_url:
             print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
             input("Press Enter to continue...")
             time.sleep(2)
-        driver.get(url)
-        time.sleep(1)
         try:
+            driver.get(url)
+            time.sleep(1)
             WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-card__price")))
         except TimeoutException:
-            print("TimeoutException")
+            print(f"TimeoutException {url}: {type(e).__name__}: {repr(e)}")
             return blocks
     time.sleep(1)
+    print(url)
     html = driver.page_source
     page_blocks = perekrestok_parse_category_page(html)
     if page_blocks:
@@ -205,7 +194,7 @@ if __name__ == "__main__":
         shop = "Перекресток"
         count = 0
         for category in PEREKRESTOK_FOOD_CATEGORIES_DICT.keys():
-            if count > 0 and count % 40 == 0:
+            if count > 0 and count % 30 == 0:
                 time.sleep(300)
             cat_label = PEREKRESTOK_FOOD_CATEGORIES_DICT[category]
             blocks = perekrestok_parse_category(category)
