@@ -1,5 +1,4 @@
 import os
-import chompjs
 import undetected_chromedriver as uc
 import time
 from datetime import datetime
@@ -46,13 +45,6 @@ def get_driver():
     options.add_argument(f"--proxy-server={proxy_url}")
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
-
-def wait_for_element(driver, class_name: str):
-    try:
-        WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
-        return True
-    except TimeoutException:
-        return False
 
 loader_sel = (By.ID, "progress_bar_dialog")
 def get_opacity(d):
@@ -143,10 +135,9 @@ def dixy_parse_category(url: str) -> str:
         time.sleep(20)
         driver.get(url)
         try:
-            WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
+            WebDriverWait(driver, 25).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
         except TimeoutException:
-            input("TimeoutException")
-            pass
+            continue
         html = driver.page_source
         page_blocks = dixy_parse_category_page(html)
         url = url.split("?")[0]

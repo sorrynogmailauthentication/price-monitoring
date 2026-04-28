@@ -254,7 +254,7 @@ if __name__ == "__main__":
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(15)
+            time.sleep(20)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
