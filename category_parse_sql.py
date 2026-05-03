@@ -109,7 +109,10 @@ def lenta_parse_category(url: str) -> str:
         wait_for_element(driver, LENTA_PRICE_ELEMENT)
         time.sleep(0.2)
         html = driver.page_source
-        page_blocks = lenta_parse_category_page(html)
+        try:
+            page_blocks = lenta_parse_category_page(html)
+        except TimeoutException:
+            continue
         if page_blocks:
             blocks.update(page_blocks)
         else:

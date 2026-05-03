@@ -249,12 +249,12 @@ if __name__ == "__main__":
         shop = "Окей"
         count = 0
         for category in OKEY_FOOD_CATEGORIES_DICT.keys():
-            if count > 0 and count % 30 == 0:
+            if count > 0 and count % 20 == 0:
                 time.sleep(360)
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(25)
+            time.sleep(60)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
