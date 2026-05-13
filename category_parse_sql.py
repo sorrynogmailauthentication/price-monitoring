@@ -124,7 +124,11 @@ def lenta_parse_category_page(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
     WebDriverWait(driver, 15).until(lambda d: d.execute_script("return document.readyState") == "complete")
     card_container = soup.select(LENTA_CARD_CONTAINER)
-    cards = card_container[0].find_all("div", class_="lu-grid__item")
+    try:
+        cards = card_container[0].find_all("div", class_="lu-grid__item")
+    except Exception as e:
+        print(f"Lenta parse category page error: {e}")
+        return page_blocks
     for card in cards:
         article = None
         name_el = card.find("span", class_="card-name_content")

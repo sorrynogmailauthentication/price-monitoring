@@ -12,6 +12,7 @@ from categories import *
 from dotenv import load_dotenv
 import csv
 import uuid
+from random import randint
 
 load_dotenv()
 
@@ -174,7 +175,6 @@ def wait_until_challenge_cleared(driver, timeout=120):
 
 def defeat_perekrestok_pyaterochka_robot_protection(driver, url):
     driver.get(url)
-    time.sleep(5)
     if "xpvnsulc" in driver.current_url:
         print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
         wait_until_challenge_cleared(driver, timeout=180)
@@ -194,12 +194,12 @@ if __name__ == "__main__":
         shop = "Перекресток"
         count = 0
         for category in PEREKRESTOK_FOOD_CATEGORIES_DICT.keys():
-            if count > 0 and count % 10 == 0:
-                time.sleep(360)
+            if count > 0 and count % 3 == 0:
+                time.sleep(randint(150, 200))
             cat_label = PEREKRESTOK_FOOD_CATEGORIES_DICT[category]
             blocks = perekrestok_parse_category(category)
             count += 1
-            time.sleep(60)
+            time.sleep(randint(10, 20))
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

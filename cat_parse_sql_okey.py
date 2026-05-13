@@ -17,6 +17,7 @@ from categories import *
 from dotenv import load_dotenv
 import csv
 import uuid
+from random import randint
 
 load_dotenv()
 
@@ -80,6 +81,9 @@ def okey_parse_category(url: str) -> str:
             WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "product-price__container")))
         except Exception as e:
             print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
+            if "xpvnsulc" in driver.current_url:
+                print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
+                input("Press Enter to continue...")
             return blocks
     time.sleep(2)
     for i in range(3):
@@ -121,7 +125,9 @@ def okey_parse_category(url: str) -> str:
                 page_idx += 1
             except Exception as e:
                 print(f"Ошибка при обработке {url}: {type(e).__name__}: {repr(e)}")
-                page_idx -= 1
+                if "xpvnsulc" in driver.current_url:
+                    print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
+                    input("Press Enter to continue...")
                 continue
     return blocks
 
@@ -249,12 +255,12 @@ if __name__ == "__main__":
         shop = "Окей"
         count = 0
         for category in OKEY_FOOD_CATEGORIES_DICT.keys():
-            if count > 0 and count % 20 == 0:
-                time.sleep(360)
+            if count > 0 and count % 3 == 0:
+                time.sleep(randint(150, 200))
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(60)
+            time.sleep(randint(10, 20))
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
