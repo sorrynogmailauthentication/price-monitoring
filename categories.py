@@ -385,7 +385,7 @@ PEREKRESTOK_FOOD_CATEGORIES_DICT = {
 "https://www.perekrestok.ru/cat/c/718/vodorosli" : "Водоросли",
 "https://www.perekrestok.ru/cat/c/197/pecene" :"Печенье",
 "https://www.perekrestok.ru/cat/c/702/vafli" : "Вафли",
-"https://www.perekrestok.ru//cat/c/703/praniki" : "Пряники",
+# "https://www.perekrestok.ru//cat/c/703/praniki" : "Пряники",
 "https://www.perekrestok.ru/cat/c/195/sokolad" : "Шоколад", 
 "https://www.perekrestok.ru/cat/c/203/batonciki" : "Батончики",
 "https://www.perekrestok.ru/cat/c/204/sokoladnye-i-orehovye-pasty" : "Шоколадные и ореховые пасты",

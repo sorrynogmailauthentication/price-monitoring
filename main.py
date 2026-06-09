@@ -11,11 +11,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from dotenv import load_dotenv
-
 load_dotenv()
 
 LENTA_PRICE_REGEX = r'\d+,\d{2}'
-LENTA_PRICE_ELEMENT = 'main-price title-28-20'
+LENTA_PRICE_ELEMENT = 'main-price'
 VKUSVIL_PRICE_ELEMENT = 'Price Price--lg'
 VKUSVIL_PRICE_REGEX = r'\d+(?:\s+\d+)*'
 PEREKRESTOK_PRICE_ELEMENT = 'price-card-unit-value'
@@ -31,10 +30,8 @@ PYATEROCHKA_URL = "https://5ka.ru/"
 AUCHAN_URL = "https://www.auchan.ru/"
 PROXY_HOST = os.getenv('PROXY_HOST')
 PROXY_PORT = os.getenv('PROXY_PORT')
-PROXY_USER = os.getenv('PROXY_USER')
-PROXY_PASS = os.getenv('PROXY_PASS')
 
-CHROMIUM_VERSION = 147
+CHROMIUM_VERSION = int(os.getenv('CHROMIUM_VERSION'))
 
 proxy_url = f"http://{PROXY_HOST}:{PROXY_PORT}"
 
@@ -190,11 +187,11 @@ def get_lenta_price(url, driver):
     price = None
     try:
         driver.get(url)
-        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[class='price-and-availability']")))
         time.sleep(2)
         price_elements = driver.find_elements(By.XPATH, f"//span[starts-with(@class, '{LENTA_PRICE_ELEMENT}')]")
         if not price_elements:
-            not_in_stock = driver.find_elements(By.XPATH, "//p[@class='out-of-stock-goods']")
+            not_in_stock = driver.find_elements(By.XPATH, "//span[@automation-id='OutOfStockGoods-text']")
             if not_in_stock:
                 raise ValueError("Not in stock")
             raise ValueError("Lenta price element not found")
@@ -247,11 +244,11 @@ if __name__ == "__main__":
     driver = get_driver()
     time.sleep(1)
     driver.get("https://www.google.com")
-    time.sleep(5)
+    time.sleep(3)
     for i in range(1):
         defeat_perekrestok_pyaterochka_robot_protection(driver, PYATEROCHKA_URL)
         time.sleep(1)
-    for i in range(1):
+    for i in range(2):
         defeat_perekrestok_pyaterochka_robot_protection(driver, PEREKRESTOK_URL)
         time.sleep(1)
     for name, url in PYATEROCHKA_PRODUCT_LIST_DICT.items():

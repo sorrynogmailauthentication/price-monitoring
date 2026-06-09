@@ -18,14 +18,12 @@ load_dotenv()
 
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-CHROMIUM_VERSION = 147
+CHROMIUM_VERSION = int(os.getenv('CHROMIUM_VERSION'))
 
 PEREKRESTOK_URL = "https://www.perekrestok.ru"
 
 PROXY_HOST = os.getenv('PROXY_HOST')
 PROXY_PORT = os.getenv('PROXY_PORT')
-PROXY_USER = os.getenv('PROXY_USER')
-PROXY_PASS = os.getenv('PROXY_PASS')
 
 proxy_url = f"http://{PROXY_HOST}:{PROXY_PORT}"
 
@@ -184,7 +182,7 @@ if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver()
     time.sleep(1)
-    driver.get("https://www.google.com/search?q=perekrestok+dostavka")
+    driver.get("https://www.google.com")
     time.sleep(3)
     conn = psycopg2.connect(DATABASE_URL)
     for i in range(1):
@@ -194,8 +192,8 @@ if __name__ == "__main__":
         shop = "Перекресток"
         count = 0
         for category in PEREKRESTOK_FOOD_CATEGORIES_DICT.keys():
-            if count > 0 and count % 3 == 0:
-                time.sleep(randint(150, 200))
+            if count > 0 and count % 10 == 0:
+                time.sleep(randint(700, 800))
             cat_label = PEREKRESTOK_FOOD_CATEGORIES_DICT[category]
             blocks = perekrestok_parse_category(category)
             count += 1

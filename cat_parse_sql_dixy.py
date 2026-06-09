@@ -17,12 +17,10 @@ load_dotenv()
 
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-CHROMIUM_VERSION = 147
+CHROMIUM_VERSION = int(os.getenv('CHROMIUM_VERSION'))
 
 PROXY_HOST = os.getenv('PROXY_HOST')
 PROXY_PORT = os.getenv('PROXY_PORT')
-PROXY_USER = os.getenv('PROXY_USER')
-PROXY_PASS = os.getenv('PROXY_PASS')
 
 DIXY_KEY_ELEMENT = "listing__wrapper"
 DIXY_PAGINATION_ELEMENT = "listing-pagination"
@@ -172,7 +170,7 @@ if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver()
     time.sleep(1)
-    driver.get("https://www.google.com/search?q=dixy+dostavka")
+    driver.get("https://www.google.com")
     time.sleep(3)
     conn = psycopg2.connect(DATABASE_URL)
     try:

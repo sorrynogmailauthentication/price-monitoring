@@ -23,14 +23,12 @@ load_dotenv()
 
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-CHROMIUM_VERSION = 146
+CHROMIUM_VERSION = int(os.getenv('CHROMIUM_VERSION'))
 
 OKEY_DOSTAVKA_URL = "https://www.okeydostavka.ru"
 
 PROXY_HOST = os.getenv('PROXY_HOST')
 PROXY_PORT = os.getenv('PROXY_PORT')
-PROXY_USER = os.getenv('PROXY_USER')
-PROXY_PASS = os.getenv('PROXY_PASS')
 
 proxy_url = f"http://{PROXY_HOST}:{PROXY_PORT}"
 
@@ -128,6 +126,8 @@ def okey_parse_category(url: str) -> str:
                 if "xpvnsulc" in driver.current_url:
                     print("Captcha/challenge detected. Solve it in browser; script will auto-continue.")
                     input("Press Enter to continue...")
+                else:
+                    page_idx += 1
                 continue
     return blocks
 
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver()
     time.sleep(1)
-    driver.get("https://www.google.com/search?q=okey+dostavka")
+    driver.get("https://www.google.com")
     time.sleep(5)
     conn = psycopg2.connect(DATABASE_URL)
     for i in range(1):
@@ -255,12 +255,12 @@ if __name__ == "__main__":
         shop = "Окей"
         count = 0
         for category in OKEY_FOOD_CATEGORIES_DICT.keys():
-            if count > 0 and count % 3 == 0:
-                time.sleep(randint(150, 200))
+            if count > 0 and count % 10 == 0:
+                time.sleep(randint(2000, 2100))
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(randint(10, 20))
+            time.sleep(randint(1, 2))
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:

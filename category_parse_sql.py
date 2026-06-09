@@ -18,7 +18,7 @@ load_dotenv()
 
 DATE_FMT = "%Y-%m-%d"
 DATABASE_URL = f"postgresql://postgres:{os.environ.get('SQL_PASSWORD')}@localhost:5432/price_monitoring"
-CHROMIUM_VERSION = 147
+CHROMIUM_VERSION = int(os.getenv('CHROMIUM_VERSION'))
 
 LENTA_PAGINATION_ELEMENT = "pagination-nav__list"
 LENTA_PRICE_ELEMENT = "main-price"
