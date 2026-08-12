@@ -245,7 +245,7 @@ if __name__ == "__main__":
     time.sleep(1)
     driver.get("https://www.google.com")
     time.sleep(3)
-    for i in range(1):
+    for i in range(2):
         defeat_perekrestok_pyaterochka_robot_protection(driver, PYATEROCHKA_URL)
         time.sleep(1)
     for i in range(2):

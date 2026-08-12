@@ -38,6 +38,7 @@ AUCHAN_ARTICLE_REGEX = re.compile(r'_(\d+?)_')
 
 VKUSVIL_URL = "https://vkusvill.ru"
 VKUSVIL_KEY_ELEMENT = "ProductCard__price"
+VKUSVIL_ITEM_CARD_CONTAINER = "div[class='ProductCards__list ']"
 
 CHIZHIK_URL = "https://chizhik.club"
 
@@ -48,11 +49,6 @@ proxy_url = f"http://{PROXY_HOST}:{PROXY_PORT}"
 
 def get_driver():
     options = uc.ChromeOptions()
-    user_data_dir = r"D:\VS Project\price-monitoring\chrome_profile_1"
-    if not os.path.exists(user_data_dir):
-        os.makedirs(user_data_dir)
-    options.add_argument(f"--user-data-dir={user_data_dir}")
-    options.add_argument("--profile-directory=Default")
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
@@ -363,7 +359,8 @@ if __name__ == "__main__":
     today = datetime.now().strftime(DATE_FMT)
     driver = get_driver()
     driver.get("https://google.com")
-    time.sleep(2)
+    print(vkusvill_parse_category("https://vkusvill.ru/goods/masla-sousy-spetsii-sakhar-i-sol/"))
+    quit()
     conn = psycopg2.connect(DATABASE_URL)
     try:
         shop = "Ашан"

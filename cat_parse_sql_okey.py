@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 import csv
 import uuid
 from random import randint
+import random
 
 load_dotenv()
 
@@ -101,7 +102,7 @@ def okey_parse_category(url: str) -> str:
         text = None
         for page_link in page_links:
             text = page_link.text.strip()
-        last_page = int(text)
+        last_page = int(text) if text else 1
         print(last_page)
         while page_idx < last_page:
             try:
@@ -254,13 +255,15 @@ if __name__ == "__main__":
     try:
         shop = "Окей"
         count = 0
-        for category in OKEY_FOOD_CATEGORIES_DICT.keys():
+        categories = list(OKEY_FOOD_CATEGORIES_DICT.keys())
+        random.shuffle(categories)
+        for category in categories:
             if count > 0 and count % 10 == 0:
-                time.sleep(randint(2000, 2100))
+                time.sleep(randint(300, 400)) 
             cat_label = OKEY_FOOD_CATEGORIES_DICT[category]
             blocks = okey_parse_category(category)
             count += 1
-            time.sleep(randint(1, 2))
+            time.sleep(randint(60, 70))
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
