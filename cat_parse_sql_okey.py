@@ -247,7 +247,7 @@ if __name__ == "__main__":
     driver = get_driver()
     time.sleep(1)
     driver.get("https://www.google.com")
-    time.sleep(5)
+    time.sleep(500)
     conn = psycopg2.connect(DATABASE_URL)
     for i in range(1):
         defeat_perekrestok_pyaterochka_robot_protection(driver, "https://www.okeydostavka.ru/msk")

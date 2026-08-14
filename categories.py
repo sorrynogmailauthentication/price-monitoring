@@ -624,3 +624,75 @@ VKUSVIL_FOOD_CATEGORIES_DICT = {
     'https://vkusvill.ru/goods/krupy-makarony-muka/': 'Крупы, макароны, мука', 
     'https://vkusvill.ru/goods/ovoshchi-frukty-yagody-zelen/': 'Овощи, фрукты, ягоды, зелень', 
 }
+
+MAGNIT_FOOD_CATEGORIES_DICT = {
+    # Молочный прилавок
+    'https://magnit.ru/catalog/63987-testmmkefir_smetana_tvorog': 'Кефир, сметана, творог',
+    'https://magnit.ru/catalog/63985-testmmyogurty_i_deserty': 'Йогурты и десерты',
+    'https://magnit.ru/catalog/63991-testmmsyry': 'Сыры',
+    'https://magnit.ru/catalog/63983-testmmmoloko_maslo_yaytsa': 'Молоко, масло, яйца',
+    'https://magnit.ru/catalog/63981-testmmdetskie_molochnye_produkty': 'Детские молочные продукты',
+    # Овощи и фрукты
+    'https://magnit.ru/catalog/63921-testmmovoshchi_griby_zelen': 'Овощи, грибы, зелень',
+    'https://magnit.ru/catalog/63929-testmmfrukty_i_yagody': 'Фрукты и ягоды',
+    'https://magnit.ru/catalog/63931-testmmsamyy_sezon': 'Самый сезон',
+    # Хлеб и выпечка
+    'https://magnit.ru/catalog/65003-testmmkhleb': 'Хлеб',
+    'https://magnit.ru/catalog/65005-testmmvypechka': 'Выпечка',
+    # 'https://magnit.ru/catalog/107221-nasha_pekarnya_copy': 'Наша пекарня',
+    # Бакалея
+    'https://magnit.ru/catalog/64129-testmmsakhar_sol_i_spetsii': 'Сахар, соль и специи',
+    'https://magnit.ru/catalog/64123-testmmkrupy_i_sukhie_zavtraki': 'Крупы и сухие завтраки',
+    'https://magnit.ru/catalog/114259-makarony_copy': 'Макароны',
+    'https://magnit.ru/catalog/64131-testmmsousy': 'Соусы',
+    'https://magnit.ru/catalog/64127-testmmrastitelnye_masla': 'Растительные масла',
+    'https://magnit.ru/catalog/64133-testmmvse_dlya_vypechki': 'Всё для выпечки',
+    # Консервы
+    'https://magnit.ru/catalog/64207-testmm_konservy_frukty_i_yagody': 'Фрукты и ягоды',
+    'https://magnit.ru/catalog/64203-testmmryba': 'Рыба',
+    'https://magnit.ru/catalog/64205-testmmovoshchi_i_griby': 'Овощи и грибы',
+    'https://magnit.ru/catalog/64201-testmmmyaso_i_ptitsa': 'Мясо и птица',
+    # Птица, мясо
+    'https://magnit.ru/catalog/64247-testmmmyaso': 'Мясо',
+    'https://magnit.ru/catalog/64245-testmmptitsa': 'Птица',
+    'https://magnit.ru/catalog/64249-testmmkolbasy_i_sosiski': 'Колбасы и сосиски',
+    # Рыба, морепродукты
+    'https://magnit.ru/catalog/38559-zamorozhennye_moreprodukty_ryba_i_moreprodukty_mm_gm': 'Дары моря',
+    'https://magnit.ru/catalog/5003-krabovye_palochki_myaso': 'Крабовые палочки',
+    'https://magnit.ru/catalog/26739-ryba': 'Рыба',
+    'https://magnit.ru/catalog/38287-pasty_i_zakuski_ryba_i_moreprodukty': 'Икра, пасты, закуски',
+    # Заморозка
+    'https://magnit.ru/catalog/64469-testmmpelmeni_i_vareniki': 'Пельмени и вареники',
+    'https://magnit.ru/catalog/64471-testmmzamorozka_polufabrikaty': 'Почти готово',
+    'https://magnit.ru/catalog/64473-testmmzamorozka_ovoshchi_i_yagody': 'Овощи и ягоды',
+    'https://magnit.ru/catalog/64475-testmmzamorozka_ryba_i_moreprodukty': 'Рыба и морепродукты',
+    'https://magnit.ru/catalog/64477-testmmmorozhenoe': 'Мороженое',
+    'https://magnit.ru/catalog/107230-pelmeni_i_vareniki_copy_2': 'Мясо и птица',
+    # Сладости
+    'https://magnit.ru/catalog/64721-testmmmarmelad_ledentsy_zhvachka': 'Мармелад, леденцы, жвачка',
+    'https://magnit.ru/catalog/64715-testmmpechene_vafli_pryaniki': 'Печенье, вафли, пряники',
+    'https://magnit.ru/catalog/64717-testmmvarene_i_med': 'Варенье, мёд, пасты',
+    'https://magnit.ru/catalog/64713-testmmkonfety_i_shokolad': 'Шоколад и конфеты',
+    'https://magnit.ru/catalog/64723-testmmbatonchiki_i_myusli': 'Сладости с пользой',
+    'https://magnit.ru/catalog/64725-testmmtorty_i_pirozhnye': 'Торты и десерты',
+    'https://magnit.ru/catalog/64719-testmmsukhofrukty_i_orekhi': 'Сухофрукты и орехи',
+    # Снеки
+    'https://magnit.ru/catalog/63831-testmmchipsy': 'Чипсы, сухарики',
+    'https://magnit.ru/catalog/63833-testmmsolenye_sneki_i_semechki': 'Снеки и семечки',
+    # Чай, кофе, какао
+    'https://magnit.ru/catalog/63877-testmmkofe': 'Кофе',
+    'https://magnit.ru/catalog/63875-testmmchay': 'Чай',
+    'https://magnit.ru/catalog/63879-testmmkakao_i_tsikoriy': 'Какао и цикорий',
+    # Вода и напитки
+    'https://magnit.ru/catalog/63797-testmmsoki_i_morsy': 'Соки и морсы',
+    # 'https://magnit.ru/catalog/63801-testmmenergetiki_i_pivo': 'Энергетики и пиво',
+    'https://magnit.ru/catalog/63793-testmmvoda': 'Вода',
+    'https://magnit.ru/catalog/63795-testmmgazirovka': 'Газировка',
+    'https://magnit.ru/catalog/63799-testmmkholodnyy_chay_i_kvas': 'Холодный чай и квас',
+    'https://magnit.ru/catalog/116591-prirodnaya_voda_4': 'Природная вода',
+    'https://magnit.ru/catalog/116614-zaryad_vitaminov': 'Заряд витаминов',
+    # Для детей (только еда)
+    'https://magnit.ru/catalog/64421-testmmmolochnoe_pitanie': 'Молочное питание',
+    'https://magnit.ru/catalog/64423-testmmnemolochnoe_pitanie': 'Немолочное питание',
+    'https://magnit.ru/catalog/64523-testmmvoda_i_napitki_detskie_tovary': 'Вода и напитки',
+}
