@@ -40,7 +40,7 @@ def magnit_parse_category(url: str) -> str:
     blocks = {}
     driver.get(url)
     print(url)
-    WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "unit-catalog__stack-item")))
+    WebDriverWait(driver, 40).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "unit-catalog__stack-item")))
     html = driver.page_source
     page_blocks = magnit_parse_category_page(html)
     if page_blocks:
@@ -56,13 +56,13 @@ def magnit_parse_category(url: str) -> str:
     for i in range(2, last_page + 1):
         page_url = f"{url}?page={i}"
         driver.get(page_url)
-        WebDriverWait(driver, 20).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "unit-catalog__stack-item")))
+        WebDriverWait(driver, 40).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "unit-catalog__stack-item")))
         html = driver.page_source
         page_blocks = magnit_parse_category_page(html)
         print(len(page_blocks))
         if page_blocks:
             blocks.update(page_blocks)
-        time.sleep(1)
+        time.sleep(3)
     return blocks
 
 def magnit_parse_category_page(html: str) -> str:
