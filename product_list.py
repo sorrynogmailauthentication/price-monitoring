@@ -95,7 +95,7 @@ VKUSVIL_PRODUCT_LIST_DICT = {
     "Соль пищевая Экстра, 500г":
     "https://vkusvill.ru/goods/sol-ekstra-pl-b-500-g-40536.html",
     "Батон нарезной 250 г":
-    "https://vkusvill.ru/goods/baton-nareznoy-673.html",
+    "https://vkusvill.ru/goods/baton-molodezhnaya-klassika-113571.html",
     "Рис Увелка круглозерный шлифованный 5х80 г":
     "https://vkusvill.ru/goods/ris-uvelka-kruglozernyy-shlifovannyy-5kh80-g-54120.html",
     "Масло подсолнечное Слобода рафинированное дезодорированное 1 л":
@@ -103,7 +103,7 @@ VKUSVIL_PRODUCT_LIST_DICT = {
     "Чай черный Greenfield Golden Ceylon пакетированный 100х2 г":
     "https://vkusvill.ru/goods/chay-chernyy-greenfield-golden-ceylon-paketirovannyy-100kh2-g-43317.html",
     "Картофель":
-    "https://vkusvill.ru/goods/kartofel-1713.html",
+    "https://vkusvill.ru/goods/kartofel-molodoy-64336.html",
     "Лук репчатый":
     "https://vkusvill.ru/goods/luk-repchatyy-605.html",
     "Морковь":
@@ -111,7 +111,7 @@ VKUSVIL_PRODUCT_LIST_DICT = {
     "Капуста белокочанная":
     "https://vkusvill.ru/goods/kapusta-belokochannaya-602.html",
     "Свекла":
-    "https://vkusvill.ru/goods/svekla-611.html",
+    "https://vkusvill.ru/goods/svekla-molodaya-20832.html",
     "Чеснок, 100 г":
     "https://vkusvill.ru/goods/chesnok-100-g-35065.html",
     "Яблоко Гала":

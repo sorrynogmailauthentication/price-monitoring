@@ -22,3 +22,6 @@ chrome_profile_3/
 chrome_profile_4/
 chrome_profile_5/
 credentials.json
+schema.sql
+linkedin_job_desc_finder.py
+stamp_watermark_pictures.py
