@@ -11,6 +11,7 @@ from categories import *
 from dotenv import load_dotenv
 import csv
 import uuid
+import random
 
 load_dotenv()
 
@@ -36,14 +37,64 @@ def get_driver():
     driver = uc.Chrome(options=options, version_main=CHROMIUM_VERSION)
     return driver
 
-def magnit_parse_category(url: str) -> str:
-    blocks = {}
+def is_crash_ui(driver) -> bool:
+    try:
+        title = (driver.title or "").lower()
+        url = (driver.current_url or "").lower()
+        # cheap: avoid full page_source if possible
+        if "aw, snap" in title or "sad tab" in title:
+            return True
+        if url.startswith("chrome-error://") or "chrome-error" in url:
+            return True
+        body = driver.find_elements(By.TAG_NAME, "body")
+        if body and "aw, snap" in (body[0].text or "").lower():
+            return True
+        return False
+    except Exception:
+        return True
+
+def restart_driver(driver, url):
+    try:
+        driver.quit()
+    except Exception as e:
+        print(f"quit failed: {driver} ({e})")
+        pass
+    time.sleep(1)
+    driver = get_driver()
     driver.get(url)
+    return driver
+
+def magnit_parse_category(driver, url: str) -> str:
+    blocks = {}
+    try:
+        driver.get(url)
+    except Exception as e:
+        print(f"get failed: {url} ({e})")
+        driver = restart_driver(driver, url)
+        time.sleep(20)
     print(url)
-    WebDriverWait(driver, 40).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "unit-catalog__stack-item")))
-    html = driver.page_source
+    try:
+        WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, "unit-catalog__stack-item")))
+    except:
+        if is_crash_ui(driver):
+            print(f"CRASH: {url}")
+            driver = restart_driver(driver, url)
+            time.sleep(20)
+        if driver.find_elements(By.CLASS_NAME, "app-empty-404"):
+            print(f"404/empty: {url}")
+            return blocks, driver
+    time.sleep(2)
+    try:
+        html = driver.page_source
+    except Exception as e:
+        print(f"page_source failed: {url} ({e})")
+        driver = restart_driver(driver, url)
+        time.sleep(20)
+        html = driver.page_source
+    time.sleep(2)
     page_blocks = magnit_parse_category_page(html)
     if page_blocks:
+        print(len(page_blocks))
         blocks.update(page_blocks)
     soup = BeautifulSoup(html, "html.parser")
     pagination_el = soup.find("nav", class_="pl-pagination__pager")
@@ -55,15 +106,38 @@ def magnit_parse_category(url: str) -> str:
         last_page = 1
     for i in range(2, last_page + 1):
         page_url = f"{url}?page={i}"
-        driver.get(page_url)
-        WebDriverWait(driver, 40).until(EC.presence_of_all_elements_located((By.CLASS_NAME, "unit-catalog__stack-item")))
-        html = driver.page_source
+        print(page_url)
+        try:
+            driver.get(page_url)
+        except Exception as e:
+            print(f"get failed: {page_url} ({e})")
+            driver = restart_driver(driver, page_url)
+            time.sleep(20)
+        try:
+            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, "unit-catalog__stack-item")))
+        except:
+            if is_crash_ui(driver):
+                print(f"CRASH: {page_url}")
+                driver = restart_driver(driver, page_url)
+                time.sleep(20)
+            if driver.find_elements(By.CLASS_NAME, "app-empty-404"):
+                print(f"404/empty: {page_url}")
+                continue
+        time.sleep(2)
+        try:
+            html = driver.page_source
+        except Exception as e:
+            print(f"page_source failed: {page_url} ({e})")
+            driver = restart_driver(driver, page_url)
+            time.sleep(20)
+            html = driver.page_source
+        time.sleep(2)
         page_blocks = magnit_parse_category_page(html)
         print(len(page_blocks))
         if page_blocks:
             blocks.update(page_blocks)
-        time.sleep(3)
-    return blocks
+        time.sleep(5)
+    return blocks, driver
 
 def magnit_parse_category_page(html: str) -> str:
     page_blocks = {}
@@ -74,10 +148,14 @@ def magnit_parse_category_page(html: str) -> str:
         if not first_child:
             continue
         name_el = card.find("a")
+        if not name_el or not name_el.get("href"):
+            continue
         name = name_el.get("title").strip()
         link = MAGNIT_URL + name_el.get("href").split("?")[0]
         article = link.split("/")[-1].split("-")[0]
         price_el = card.find("span", class_="unit-catalog-product-preview-prices__regular")
+        if not price_el:
+            continue
         price = price_el.find("span").get_text(strip=True).split("\u200a")[0]
         discount_el = card.find("span", class_="unit-catalog-product-preview-prices__sale")
         if discount_el:
@@ -164,11 +242,13 @@ if __name__ == "__main__":
     try:
         shop = "Магнит"
         categories = list(MAGNIT_FOOD_CATEGORIES_DICT.keys())
+        random.shuffle(categories)
         for category in categories:
             cat_label = MAGNIT_FOOD_CATEGORIES_DICT[category]
-            blocks = magnit_parse_category(category)
+            blocks, driver = magnit_parse_category(driver, category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        time.sleep(5)
     finally:
         conn.close()
         driver.quit()

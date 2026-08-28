@@ -135,6 +135,7 @@ def dixy_parse_category(url: str) -> str:
         try:
             WebDriverWait(driver, 25).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".listing-pagination a")))
         except TimeoutException:
+            url = url.split("?")[0]
             continue
         html = driver.page_source
         page_blocks = dixy_parse_category_page(html)
