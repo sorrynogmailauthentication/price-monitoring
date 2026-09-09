@@ -13,7 +13,6 @@ from selenium.common.exceptions import TimeoutException
 from dotenv import load_dotenv
 load_dotenv()
 
-LENTA_PRICE_REGEX = r'\d+,\d{2}'
 LENTA_PRICE_ELEMENT = 'main-price'
 VKUSVIL_PRICE_ELEMENT = 'Price Price--lg'
 VKUSVIL_PRICE_REGEX = r'\d+(?:\s+\d+)*'
@@ -195,12 +194,16 @@ def get_lenta_price(url, driver):
             if not_in_stock:
                 raise ValueError("Not in stock")
             raise ValueError("Lenta price element not found")
-        price_text = price_elements[0].text
-        price_match = re.search(LENTA_PRICE_REGEX, price_text)
-        if price_match:
-            price = float(price_match.group().replace(',', '.'))
-        else:
-            price = "Lenta wrong pattern"
+        main_price = price_elements[0]
+        rubles_elements = main_price.find_elements(By.CSS_SELECTOR, "span.view-price-rubles")
+        kopecks_elements = main_price.find_elements(By.CSS_SELECTOR, "span.view-price-kopecks")
+        if not rubles_elements or not kopecks_elements:
+            raise ValueError("Lenta price parts not found")
+        rubles = re.sub(r"\D", "", rubles_elements[0].text)
+        kopecks = re.sub(r"\D", "", kopecks_elements[0].text)
+        if not rubles or not kopecks:
+            raise ValueError("Lenta price parts are empty")
+        price = float(f"{rubles}.{kopecks.zfill(2)}")
     except TimeoutException:
         price = "Lenta page load timeout"
     except ValueError as e:
@@ -240,7 +243,7 @@ if __name__ == "__main__":
     os.makedirs(directory, exist_ok=True)
     filename = f'all_products.csv'
     df = pd.read_csv(filename, encoding='utf-8-sig')
-    df[today] = ''
+    df[today] = pd.Series("", index=df.index, dtype="object")
     driver = get_driver()
     time.sleep(1)
     driver.get("https://www.google.com")
