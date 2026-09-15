@@ -250,7 +250,7 @@ PEREKRESTOK_PRODUCT_LIST_DICT = {
 DIXY_PRODUCT_LIST_DICT = {
     "Макароны Makfa Спирали 450г" : "https://dixy.ru/product/makaronnye-izdeliya-makfa-spirali-450g-2000002143/",
     "Крупа Увелка гречневая в пакетах для варки 5х80г": "https://dixy.ru/product/krupa-uvelka-grechnevaya-v-paketakh-dlya-varki-5kh80g-2000272542/",
-    "Мука пшеничная MAKFA хлебопекарная высший сорт, 2кг": "https://dixy.ru/product/muka-makfa-pshenichnaya-vysshiy-sort-2kg-tst0035253/",
+    "Мука пшеничная MAKFA хлебопекарная высший сорт, 2кг": "https://dixy.ru/product/muka-pshenichnaya-makfa-vysshiy-sort-2kg-tst0035253/",
     "Хлопья овсяные ГЕРКУЛЕС Монастырский, 500г": "https://dixy.ru/product/gerkules-russkiy-produkt-monastyrskiy-ovsyanye-khlopya-500g-2000222892/",
     "Сахар, 1кг": "https://dixy.ru/product/sakhar-pesok-belyy-fasovannyy-v-assortimente-1kg-2000214171/",
     "Соль Экстра поваренная пищевая 500г":
@@ -289,8 +289,8 @@ DIXY_PRODUCT_LIST_DICT = {
     "https://dixy.ru/product/smetana-prostokvashino-20-300g-2000166052/",
     "Масло сливочное Экомилк ГОСТ 82,5% высший сорт 180г":
     "https://dixy.ru/product/slivochnoe-maslo-ekomilk-gost-825-vysshiy-sort-180g-10j0079578/",
-    "Сыр Брест-Литовск Классический 45% 200г":
-    "https://dixy.ru/product/syr-brest-litovsk-klassicheskiy-45-200g-2000184737/",
+    "Сыр Брест-Литовск Классический 45% 180г":
+    "https://dixy.ru/product/syr-brest-litovsk-klassicheskiy-45-180g-2000184737/",
     "Яйцо куриное Окское столовое С1 10шт":
     "https://dixy.ru/product/yaytso-kurinoe-okskoe-stolovoe-s1-10sht-tst0034515/",
     "Филе цыплёнка-бройлера Петелинка без кожи в упаковке":
@@ -314,7 +314,7 @@ DIXY_PRODUCT_LIST_DICT = {
     "Печенье Юбилейное Молочное с молочной глазурью 116г":
     "https://dixy.ru/product/pechene-yubileynoe-molochnoe-s-molochnoy-glazuryu-116g-2000223622/",
     "Огурцы среднеплодные гладкие":
-    "https://dixy.ru/product/ogurtsy-sredneplodnye-gladkie-2000271421/",
+    "https://dixy.ru/product/ogurtsy-sredneplodnye-2000271421/",
     "Томаты красные":
     "https://dixy.ru/product/tomaty-krasnye-10e0075437/",
     "Вода минеральная Ессентуки №4":
