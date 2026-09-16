@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import psycopg2
 from categories import *
+from parse_qc import accept_or_discard
 from dotenv import load_dotenv
 import csv
 import re
@@ -34,7 +35,8 @@ AUCHAN_ITEM_CARD_PRICE_CLASS = "styles_price__U1y_f"
 AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "styles_price__oldPrice__VsVTT"
 AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardPicturePanel__sR0Mr"
 AUCHAN_URL = "https://www.auchan.ru"
-AUCHAN_ARTICLE_REGEX = re.compile(r'_(\d+?)_')
+AUCHAN_ARTICLE_FN_REGEX = re.compile(r"/fn:(\d+)/")
+AUCHAN_ARTICLE_UNDERSCORE_REGEX = re.compile(r"_(\d+)_")
 
 VKUSVIL_URL = "https://vkusvill.ru"
 VKUSVIL_KEY_ELEMENT = "ProductCard__price"
@@ -139,7 +141,7 @@ def lenta_parse_category_page(html: str) -> str:
         name_appendix_el = card.find("p", class_="card-name_package")
         name_text = name_el.get_text(strip=True) if name_el else ""
         name_appendix_text = name_appendix_el.get_text(strip=True) if name_appendix_el else ""
-        name_text = f"{name_text} {name_appendix_text}"
+        name_text = f"{name_text} {name_appendix_text}".strip()
         link_el = card.find("a", class_="product-card")
         link = link_el.get("href", "") if link_el else ""
         price_el = card.find("span", class_="main-price")
@@ -162,7 +164,7 @@ def lenta_parse_category_page(html: str) -> str:
                 old_price_rubles = re.sub(r"\D", "", old_price_rubles_el.get_text())
                 old_price_kopecks = re.sub(r"\D", "", old_price_kopecks_el.get_text()) or "00"
                 old_price_text = (f"{old_price_rubles}.{old_price_kopecks.zfill(2)}")
-        if not link or price_text is None:
+        if not accept_or_discard(link, name_text, price_text, article, "Лента"):
             continue
         page_blocks[link] = [name_text, price_text, old_price_text, article]
     return page_blocks
@@ -193,27 +195,44 @@ def auchan_parse_category(url: str) -> str:
             break
     return blocks
 
+def extract_auchan_article(card) -> str | None:
+    """Article lives in imgproxy `/fn:492876/`; older cards used `_492876_` in the filename."""
+    srcs = []
+    imgs = card.find_all("img")
+    picture_imgs = [
+        img for img in imgs
+        if img.get("class") and any("styles_picture_img" in cls for cls in img.get("class", []))
+    ]
+    for img in picture_imgs or imgs:
+        for attr in ("src", "data-src", "srcset"):
+            val = img.get(attr)
+            if val:
+                srcs.append(val)
+    blob = " ".join(srcs)
+    match = AUCHAN_ARTICLE_FN_REGEX.search(blob) or AUCHAN_ARTICLE_UNDERSCORE_REGEX.search(blob)
+    if not match:
+        return None
+    return match.group(1).zfill(6)
+
+
 def auchan_parse_category_page(html: str) -> str:
     page_blocks = {}
     soup = BeautifulSoup(html, "html.parser")
     cards = soup.select(AUCHAN_ITEM_CARD_CONTAINER)
     for card in cards:
-        article_el = card.find("img")
-        article_html = article_el.get("src", "") if article_el else None
-        article_match = AUCHAN_ARTICLE_REGEX.search(article_html)
-        article = str(article_match.group(1)).zfill(6) if article_match else None
+        article = extract_auchan_article(card)
         name_el = card.find(class_=AUCHAN_ITEM_CARD_NAME_CLASS)
         name_text = name_el.get_text(strip=True) if name_el else ""
         link_el = card.find("a", class_=AUCHAN_ITEM_CARD_LINK_CLASS)
         link = link_el.get("href", "") if link_el else ""
-        if not link:
-            continue
         if link and not link.startswith("http"):
             link = AUCHAN_URL + link.split("?")[0]
         price_el = card.find(class_=AUCHAN_ITEM_CARD_PRICE_CLASS)
         price_text = price_el.get_text(strip=True).replace("₽", "").replace(",", ".") if price_el else None
         discount_el = card.find(class_=AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
         discount_text = discount_el.get_text(strip=True).replace("₽", "").replace(",", ".") if discount_el else None
+        if not accept_or_discard(link, name_text, price_text, article, "Ашан"):
+            continue
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
 
@@ -238,8 +257,6 @@ def chizhik_parse_category(url: str) -> str:
         name_text = name_el.get_text(strip=True) if name_el else ""
         link_el = card.find("a", class_="css-15jfzpq")
         link = link_el.get("href", "") if link_el else ""
-        if not link:
-            continue
         if link and not link.startswith("http"):
             link = CHIZHIK_URL + link.split("?")[0]
         price_rub_el = card.find(class_="css-gl8r4y")
@@ -252,6 +269,8 @@ def chizhik_parse_category(url: str) -> str:
         discount_kopeek_el = card.find(class_="css-t7jqfn")
         discount_kopeek_text = discount_kopeek_el.get_text(strip=True) if discount_kopeek_el else None
         discount_text = discount_rub_text + "." + discount_kopeek_text if discount_rub_text and discount_kopeek_text else None
+        if not accept_or_discard(link, name_text, price_text, article, "Чижик"):
+            continue
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
 
@@ -292,12 +311,12 @@ def vkusvill_parse_category_page(html: str) -> str:
         name_text = img_el.get("title", "").strip().replace("\xa0", " ") if img_el else ""
         link_el = card.find("a")
         raw_link = link_el.get("href", "") if link_el else ""
-        link = VKUSVIL_URL + raw_link
+        link = VKUSVIL_URL + raw_link if raw_link else ""
         price_el = card.find("span", class_="js-datalayer-catalog-list-price")
         old_price_el = card.find("span", class_="js-datalayer-catalog-list-price-old")
         price_text = price_el.get_text(strip=True) if price_el else None
         discount_text = old_price_el.get_text(strip=True) if old_price_el else None
-        if not name_text or not price_text or not raw_link:
+        if not accept_or_discard(link, name_text, price_text, article, "Вкусвилл"):
             continue
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
@@ -376,12 +395,12 @@ if __name__ == "__main__":
     time.sleep(2)
     conn = psycopg2.connect(DATABASE_URL)
     try:
-        # shop = "Ашан"
-        # for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
-        #     blocks = auchan_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Ашан"
+        for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+            cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
+            blocks = auchan_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         shop = "Лента"
         for category in LENTA_FOOD_CATEGORIES_DICT.keys():
             cat_label = LENTA_FOOD_CATEGORIES_DICT[category]

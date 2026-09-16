@@ -14,6 +14,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import psycopg2
 from categories import *
+from parse_qc import accept_or_discard
 from dotenv import load_dotenv
 import csv
 import uuid
@@ -155,6 +156,8 @@ def okey_parse_category_page(html: str) -> str:
             discount_text = discount_el.get_text(strip=True).replace("\xa0", "").replace(",", ".").replace("₽", "").strip()
             if discount_text == "":
                 discount_text = None
+            if not accept_or_discard(link, name_text, price_text, article, "Окей"):
+                continue
             page_blocks[link] = [name_text, price_text, discount_text, article]
         except Exception as e:
             print(e)

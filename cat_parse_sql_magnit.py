@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import psycopg2
 from categories import *
+from parse_qc import accept_or_discard
 from dotenv import load_dotenv
 import csv
 import uuid
@@ -148,20 +149,23 @@ def magnit_parse_category_page(html: str) -> str:
         if not first_child:
             continue
         name_el = card.find("a")
-        if not name_el or not name_el.get("href"):
-            continue
-        name = name_el.get("title").strip()
-        link = MAGNIT_URL + name_el.get("href").split("?")[0]
-        article = link.split("/")[-1].split("-")[0]
+        name = (name_el.get("title") or "").strip() if name_el else ""
+        href = name_el.get("href") if name_el else ""
+        link = MAGNIT_URL + href.split("?")[0] if href else ""
+        article = link.split("/")[-1].split("-")[0] if link else None
         price_el = card.find("span", class_="unit-catalog-product-preview-prices__regular")
-        if not price_el:
-            continue
-        price = price_el.find("span").get_text(strip=True).split("\u200a")[0]
+        price = None
+        if price_el:
+            price_span = price_el.find("span")
+            if price_span:
+                price = price_span.get_text(strip=True).split("\u200a")[0]
         discount_el = card.find("span", class_="unit-catalog-product-preview-prices__sale")
         if discount_el:
             discount = discount_el.find("span").get_text(strip=True).split("\u200a")[0]
         else:
             discount = None
+        if not accept_or_discard(link, name, price, article, "Магнит"):
+            continue
         page_blocks[link] = [name, price, discount, article]
     return page_blocks
 

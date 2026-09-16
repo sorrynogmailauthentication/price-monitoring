@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import psycopg2
 from categories import *
+from parse_qc import accept_or_discard
 from dotenv import load_dotenv
 import csv
 import uuid
@@ -80,21 +81,26 @@ def perekrestok_parse_category_page(html: str) -> str:
         try:
             link_el = card.find("a", class_="product-card__title")
             link_text = link_el.get("href", "") if link_el else ""
-            link = PEREKRESTOK_URL + link_text
-            article = link_text.split("-")[-1]
+            link = PEREKRESTOK_URL + link_text if link_text else ""
+            article = link_text.split("-")[-1] if link_text else None
             name_el = card.find("a", class_="product-card__title-link")
             name_text = name_el.get_text(strip=True) if name_el else ""
             price_el = card.find("div", class_="price-new")
-            texts = list(price_el.stripped_strings) 
-            price = texts[1] if len(texts) > 1 else texts[0]
-            price_text = price.replace('\xa0', '').replace(',', '.').replace('₽', '').strip()
+            price_text = None
+            if price_el:
+                texts = list(price_el.stripped_strings)
+                if texts:
+                    price = texts[1] if len(texts) > 1 else texts[0]
+                    price_text = price.replace('\xa0', '').replace(',', '.').replace('₽', '').strip()
+            discount_text = None
             discount_el = card.find("div", class_="price-old")
             if discount_el:
-                texts = list(discount_el.stripped_strings) 
-                discount = texts[1] if len(texts) > 1 else texts[0]
-                discount_text = discount.replace('\xa0', '').replace(',', '.').replace('₽', '').strip()
-            else:
-                discount_text = None
+                texts = list(discount_el.stripped_strings)
+                if texts:
+                    discount = texts[1] if len(texts) > 1 else texts[0]
+                    discount_text = discount.replace('\xa0', '').replace(',', '.').replace('₽', '').strip()
+            if not accept_or_discard(link, name_text, price_text, article, "Перекресток"):
+                continue
             page_blocks[link] = [name_text, price_text, discount_text, article]
         except Exception as e:
             print(e)

@@ -9,6 +9,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import psycopg2
 from categories import *
+from parse_qc import accept_or_discard
 from dotenv import load_dotenv
 import csv
 import uuid
@@ -156,14 +157,14 @@ def dixy_parse_category_page(html: str) -> str:
         name_text = name_el.get_text(strip=True) if name_el else ""
         link_el = card.find("a", class_=DIXY_ITEM_CARD_LINK_CLASS)
         link = link_el.get("href", "") if link_el else ""
-        if not link:
-            continue
         if link and not link.startswith("http"):
             link = DIXY_URL + link.split("?")[0]
         price_el = card.find(class_=DIXY_ITEM_CARD_PRICE_CLASS)
         price_text = price_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if price_el else None
         discount_el = card.find(class_=DIXY_ITEM_CARD_BEFORE_DISCOUNT_CLASS)
         discount_text = discount_el.get_text(strip=True).replace("руб.", "").replace(",", ".") if discount_el else None
+        if not accept_or_discard(link, name_text, price_text, article, "Дикси"):
+            continue
         page_blocks[link] = [name_text, price_text, discount_text, article]
     return page_blocks
 
