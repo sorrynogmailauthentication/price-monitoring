@@ -306,6 +306,8 @@ def vkusvill_parse_category_page(html: str) -> str:
     cards = soup.find("div", class_="ProductCards__list")
     for card in cards.find_all(recursive=False):
         article_el = card.find("div", class_="js-datalayer-catalog-list-item")
+        if not article_el:
+            continue
         article = str(article_el.get("data-id", "")).zfill(6) if article_el else None
         img_el = card.find("img")
         name_text = img_el.get("title", "").strip().replace("\xa0", " ") if img_el else ""
@@ -316,9 +318,11 @@ def vkusvill_parse_category_page(html: str) -> str:
         old_price_el = card.find("span", class_="js-datalayer-catalog-list-price-old")
         price_text = price_el.get_text(strip=True) if price_el else None
         discount_text = old_price_el.get_text(strip=True) if old_price_el else None
+        print(link, name_text, price_text, discount_text, article)
         if not accept_or_discard(link, name_text, price_text, article, "Вкусвилл"):
             continue
         page_blocks[link] = [name_text, price_text, discount_text, article]
+    exit()
     return page_blocks
 
 def _parse_price(price_text):
