@@ -35,7 +35,7 @@ AUCHAN_ITEM_CARD_PRICE_CLASS = "styles_price__U1y_f"
 AUCHAN_ITEM_CARD_BEFORE_DISCOUNT_CLASS = "styles_price__oldPrice__VsVTT"
 AUCHAN_ITEM_CARD_LINK_CLASS = "styles_productCardPicturePanel__sR0Mr"
 AUCHAN_URL = "https://www.auchan.ru"
-AUCHAN_ARTICLE_FN_REGEX = re.compile(r"/fn:(\d+)/")
+AUCHAN_ARTICLE_FN_REGEX = re.compile(r"/fn:(\d+)(?:_\d+)?/")
 AUCHAN_ARTICLE_UNDERSCORE_REGEX = re.compile(r"_(\d+)_")
 
 VKUSVIL_URL = "https://vkusvill.ru"
