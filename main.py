@@ -197,13 +197,23 @@ def get_lenta_price(url, driver):
         main_price = price_elements[0]
         rubles_elements = main_price.find_elements(By.CSS_SELECTOR, "span.view-price-rubles")
         kopecks_elements = main_price.find_elements(By.CSS_SELECTOR, "span.view-price-kopecks")
-        if not rubles_elements or not kopecks_elements:
-            raise ValueError("Lenta price parts not found")
+
+        # Теперь проверяем только наличие рублей, так как копейки могут отсутствовать
+        if not rubles_elements:
+            raise ValueError("Lenta price rubles not found")
+
         rubles = re.sub(r"\D", "", rubles_elements[0].text)
-        kopecks = re.sub(r"\D", "", kopecks_elements[0].text)
-        if not rubles or not kopecks:
-            raise ValueError("Lenta price parts are empty")
-        price = float(f"{rubles}.{kopecks.zfill(2)}")
+        if not rubles:
+            raise ValueError("Lenta price rubles are empty")
+
+        # Если копейки найдены и в них есть цифры — берем их, иначе ставим "00"
+        if kopecks_elements:
+            kopecks = re.sub(r"\D", "", kopecks_elements[0].text)
+            kopecks = kopecks.zfill(2) if kopecks else "00"
+        else:
+            kopecks = "00"
+
+        price = float(f"{rubles}.{kopecks}")
     except TimeoutException:
         price = "Lenta page load timeout"
     except ValueError as e:

@@ -104,14 +104,12 @@ def lenta_parse_category(url: str) -> str:
             raw_value = page.get_text(strip=True, separator=",")
             last_page = int(raw_value.split(",")[-1])
     blocks = {}
-    print(url)
     page_blocks = lenta_parse_category_page(html)
     if page_blocks:
         blocks.update(page_blocks)
     base_url = url.rstrip("/")
     for page in range(2, last_page + 1):
         url = f"{base_url}/page/{page}/"
-        print(url)
         driver.get(url)
         WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".main-price .view-price-rubles"))
@@ -319,7 +317,6 @@ def vkusvill_parse_category_page(html: str) -> str:
         old_price_el = card.find("span", class_="js-datalayer-catalog-list-price-old")
         price_text = price_el.get_text(strip=True) if price_el else None
         discount_text = old_price_el.get_text(strip=True) if old_price_el else None
-        print(link, name_text, price_text, discount_text, article)
         if not accept_or_discard(link, name_text, price_text, article, "Вкусвилл"):
             continue
         page_blocks[link] = [name_text, price_text, discount_text, article]
