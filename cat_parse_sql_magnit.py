@@ -137,6 +137,8 @@ def magnit_parse_category(driver, url: str) -> str:
         print(len(page_blocks))
         if page_blocks:
             blocks.update(page_blocks)
+        if i > 2 and len(page_blocks) == 0:
+            break
         time.sleep(5)
     return blocks, driver
 

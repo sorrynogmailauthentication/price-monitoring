@@ -27,7 +27,7 @@ LENTA_ARTICLE_REGEX = re.compile(r"product-(\d+)-favorite")
 LENTA_CARD_CONTAINER = "div[class='lu-grid']"
 LENTA_URL = "https://lenta.com/"
 
-AUCHAN_KEY_ELEMENT = "styles_productCard__xH9l_"
+AUCHAN_KEY_ELEMENT = "styles_catalogListPage_item__z8DQj"
 AUCHAN_PAGINATION_ELEMENT = "styles_pagination__TCaLO"
 AUCHAN_ITEM_CARD_CONTAINER = "div[data-testid='productCard-container']"
 AUCHAN_ITEM_CARD_NAME_CLASS = "styles_productCardContentPanel_name__gtZfG"
@@ -92,25 +92,35 @@ def get_auchan_category_list() -> list:
 
 def lenta_parse_category(url: str) -> str:
     driver.get(url)
+    time.sleep(3)
     WebDriverWait(driver, 15).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, ".main-price .view-price-rubles"))
     )
+    try:
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".pagination-nav"))
+        )
+    except TimeoutException:
+        pass
     html = driver.page_source
     soup = BeautifulSoup(html, "html.parser")
-    pages = soup.find_all("ul", class_=LENTA_PAGINATION_ELEMENT)
+    pages = soup.find_all("li", class_="list__item")
     last_page = 1
     if pages:
-        for page in pages:
-            raw_value = page.get_text(strip=True, separator=",")
-            last_page = int(raw_value.split(",")[-1])
+        links = soup.select(".pagination-nav .list__link")
+        numbers = [int(el.get_text(strip=True)) for el in links if el.get_text(strip=True).isdigit()]
+        last_page = max(numbers) if numbers else 1
     blocks = {}
     page_blocks = lenta_parse_category_page(html)
     if page_blocks:
         blocks.update(page_blocks)
+    print(url)
+    print(len(page_blocks))
     base_url = url.rstrip("/")
     for page in range(2, last_page + 1):
         url = f"{base_url}/page/{page}/"
         driver.get(url)
+        time.sleep(3)
         WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, ".main-price .view-price-rubles"))
         )
@@ -121,7 +131,9 @@ def lenta_parse_category(url: str) -> str:
             continue
         if page_blocks:
             blocks.update(page_blocks)
-        else:
+        print(url)
+        print(len(page_blocks))
+        if len(page_blocks) == 0:
             break
     return blocks
 
@@ -141,7 +153,7 @@ def lenta_parse_category_page(html: str) -> str:
         name_text = name_el.get_text(strip=True) if name_el else ""
         name_appendix_text = name_appendix_el.get_text(strip=True) if name_appendix_el else ""
         name_text = f"{name_text} {name_appendix_text}".strip()
-        link_el = card.find("a", class_="product-card")
+        link_el = card.find("a", class_="name-link")
         link = link_el.get("href", "") if link_el else ""
         price_el = card.find("span", class_="main-price")
         price_rubles_el = price_el.find("span", class_="view-price-rubles") if price_el else None
@@ -178,19 +190,23 @@ def auchan_parse_category(url: str) -> str:
     last_page = int(pages_text) if pages_text else 1
     blocks = {}
     page_blocks = auchan_parse_category_page(html)
+    print(url)
+    print(len(page_blocks))
     if page_blocks:
         blocks.update(page_blocks)
     for page in range(2, last_page + 1):
         time.sleep(1)
         url = f"{url}?page={page}"
         driver.get(url)
+        print(url)
         wait_for_element(driver, AUCHAN_KEY_ELEMENT)
         url = url.split("?")[0]
         html = driver.page_source
         page_blocks = auchan_parse_category_page(html)
         if page_blocks:
             blocks.update(page_blocks)
-        else:
+        print(len(page_blocks))
+        if len(page_blocks) == 0:
             break
     return blocks
 
@@ -397,33 +413,33 @@ if __name__ == "__main__":
     time.sleep(2)
     conn = psycopg2.connect(DATABASE_URL)
     try:
-        shop = "Ашан"
-        for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
-            cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
-            blocks = auchan_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Ашан"
+        # for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+        #     cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
+        #     blocks = auchan_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         shop = "Лента"
         for category in LENTA_FOOD_CATEGORIES_DICT.keys():
             cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
             blocks = lenta_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        shop = "Вкусвилл"
-        for category in VKUSVIL_FOOD_CATEGORIES_DICT.keys():
-            cat_label = VKUSVIL_FOOD_CATEGORIES_DICT[category]
-            blocks = vkusvill_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Вкусвилл"
+        # for category in VKUSVIL_FOOD_CATEGORIES_DICT.keys():
+        #     cat_label = VKUSVIL_FOOD_CATEGORIES_DICT[category]
+        #     blocks = vkusvill_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         driver.quit()
         driver = get_driver_proxy()
         driver.get("https://google.com")
-        shop = "Чижик"
-        for category in CHIZHIK_FOOD_CATEGORIES_DICT.keys():
-            cat_label = CHIZHIK_FOOD_CATEGORIES_DICT[category]
-            blocks = chizhik_parse_category(category)
-            if blocks:
-                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        # shop = "Чижик"
+        # for category in CHIZHIK_FOOD_CATEGORIES_DICT.keys():
+        #     cat_label = CHIZHIK_FOOD_CATEGORIES_DICT[category]
+        #     blocks = chizhik_parse_category(category)
+        #     if blocks:
+        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
         conn.close()
         driver.quit()
