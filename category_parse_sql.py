@@ -92,7 +92,7 @@ def get_auchan_category_list() -> list:
 
 def lenta_parse_category(url: str) -> str:
     driver.get(url)
-    time.sleep(3)
+    time.sleep(1)
     WebDriverWait(driver, 15).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, ".main-price .view-price-rubles"))
     )
@@ -102,6 +102,7 @@ def lenta_parse_category(url: str) -> str:
         )
     except TimeoutException:
         pass
+    time.sleep(3)
     html = driver.page_source
     soup = BeautifulSoup(html, "html.parser")
     pages = soup.find_all("li", class_="list__item")
@@ -413,33 +414,33 @@ if __name__ == "__main__":
     time.sleep(2)
     conn = psycopg2.connect(DATABASE_URL)
     try:
-        # shop = "Ашан"
-        # for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
-        #     blocks = auchan_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Ашан"
+        for category in AUCHAN_FOOD_CATEGORIES_DICT.keys():
+            cat_label = AUCHAN_FOOD_CATEGORIES_DICT[category]
+            blocks = auchan_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         shop = "Лента"
         for category in LENTA_FOOD_CATEGORIES_DICT.keys():
             cat_label = LENTA_FOOD_CATEGORIES_DICT[category]
             blocks = lenta_parse_category(category)
             if blocks:
                 update_or_append_products_sql(conn, blocks, today, shop, cat_label)
-        # shop = "Вкусвилл"
-        # for category in VKUSVIL_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = VKUSVIL_FOOD_CATEGORIES_DICT[category]
-        #     blocks = vkusvill_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Вкусвилл"
+        for category in VKUSVIL_FOOD_CATEGORIES_DICT.keys():
+            cat_label = VKUSVIL_FOOD_CATEGORIES_DICT[category]
+            blocks = vkusvill_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
         driver.quit()
         driver = get_driver_proxy()
         driver.get("https://google.com")
-        # shop = "Чижик"
-        # for category in CHIZHIK_FOOD_CATEGORIES_DICT.keys():
-        #     cat_label = CHIZHIK_FOOD_CATEGORIES_DICT[category]
-        #     blocks = chizhik_parse_category(category)
-        #     if blocks:
-        #         update_or_append_products_sql(conn, blocks, today, shop, cat_label)
+        shop = "Чижик"
+        for category in CHIZHIK_FOOD_CATEGORIES_DICT.keys():
+            cat_label = CHIZHIK_FOOD_CATEGORIES_DICT[category]
+            blocks = chizhik_parse_category(category)
+            if blocks:
+                update_or_append_products_sql(conn, blocks, today, shop, cat_label)
     finally:
         conn.close()
         driver.quit()
